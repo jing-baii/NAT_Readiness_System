@@ -1,0 +1,25 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block sidebar %}
+{{ block.super }}
+<div class="module">
+    <table>
+        <caption>
+            <a href="{% url 'admin:student-access-report' %}" class="section">
+                <i class="fas fa-chart-line me-2"></i>
+                Student Study Link Access Report
+            </a>
+        </caption>
+        <tr>
+            <th scope="row">
+                <a href="{% url 'admin:student-access-report' %}">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    View Report
+                </a>
+            </th>
+            <td></td>
+        </tr>
+    </table>
+</div>
+{% endblock %} 

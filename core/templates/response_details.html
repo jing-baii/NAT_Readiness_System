@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Response Details</h2>
+                    <p class="text-muted mb-0">Detailed view of your answer</p>
+                </div>
+                <a href="{% url 'student_dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card fade-in">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="card-title">Question</h5>
+                        <p class="card-text">{{ response.question.question_text }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="card-title">Subject & Topic</h5>
+                        <p class="card-text">
+                            <span class="badge bg-primary me-2">{{ response.question.subtopic.general_topic.subject.name }}</span>
+                            <span class="badge bg-info">{{ response.question.subtopic.general_topic.name }}</span>
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="card-title">Your Answer</h5>
+                        <p class="card-text">{{ response.answer }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="card-title">Result</h5>
+                        {% if response.is_correct %}
+                        <span class="badge bg-success">Correct</span>
+                        {% else %}
+                        <span class="badge bg-danger">Incorrect</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="card-title">Correct Answer</h5>
+                        <p class="card-text">{{ response.question.correct_answer }}</p>
+                    </div>
+
+                    {% if response.question.explanation %}
+                    <div class="mb-4">
+                        <h5 class="card-title">Explanation</h5>
+                        <p class="card-text">{{ response.question.explanation }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if not response.is_correct and study_links %}
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-book-reader me-2"></i>Recommended Study Materials
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                {% for link in study_links %}
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="flex-shrink-0">
+                                                    <div class="bg-info bg-opacity-10 p-2 rounded-circle">
+                                                        <i class="fas fa-{% if link.material_type == 'video' %}video{% elif link.material_type == 'game' %}gamepad{% elif link.material_type == 'quiz' %}question-circle{% elif link.material_type == 'interactive' %}mouse-pointer{% elif link.material_type == 'practice' %}pencil-alt{% else %}book{% endif %} text-info"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="card-title mb-0">{{ link.title }}</h6>
+                                                    <small class="text-muted">{{ link.source }}</small>
+                                                </div>
+                                            </div>
+                                            <p class="card-text text-muted">{{ link.description }}</p>
+                                            <div class="mt-3">
+                                                <a href="{% url 'track_link_access' link.id %}" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer">
+                                                    <i class="fas fa-external-link-alt me-1"></i>Access Resource
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h5 class="card-title">Submitted At</h5>
+                        <p class="card-text">{{ response.submitted_at|date:"F d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+.card-title {
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.card-text {
+    color: var(--text-dark);
+    margin-bottom: 0;
+}
+</style>
+{% endblock %} 

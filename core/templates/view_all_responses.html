@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">All Responses</h2>
+                    <p class="text-muted mb-0">Complete history of your quiz responses</p>
+                </div>
+                <a href="{% url 'student_dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card fade-in">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">Performance by Subject</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Total Attempts</th>
+                                    <th>Correct Answers</th>
+                                    <th>Success Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject, data in subject_performance.items %}
+                                <tr>
+                                    <td>{{ subject }}</td>
+                                    <td>{{ data.total }}</td>
+                                    <td>{{ data.correct }}</td>
+                                    <td>
+                                        <div class="progress progress-bar-custom">
+                                            <div class="progress-bar {% if data.success_rate >= 70 %}bg-success{% elif data.success_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ data.success_rate }}%"
+                                                 aria-valuenow="{{ data.success_rate }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ data.success_rate }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No performance data available yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Responses -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card fade-in">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">Response History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Topic</th>
+                                    <th>Question</th>
+                                    <th>Your Answer</th>
+                                    <th>Result</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for response in responses %}
+                                <tr>
+                                    <td>{{ response.question.subtopic.general_topic.subject.name }}</td>
+                                    <td>{{ response.question.subtopic.general_topic.name }}</td>
+                                    <td>{{ response.question.question_text|truncatechars:50 }}</td>
+                                    <td>{{ response.answer|truncatechars:30 }}</td>
+                                    <td>
+                                        {% if response.is_correct %}
+                                        <span class="badge bg-success">Correct</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Incorrect</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ response.submitted_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'view_response_details' response.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No responses yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-bar-custom {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+}
+
+.progress-bar-custom .progress-bar {
+    border-radius: 4px;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %} 

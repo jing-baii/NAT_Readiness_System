@@ -1,0 +1,744 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Take Quiz - Level {{ level }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh; margin-top: 80px;">
+    <div class="container-fluid px-2 px-md-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header sticky-top" style="background: var(--primary-color, #2563eb); color: var(--on-primary, #fff);">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                            <div class="text-center text-md-start mb-2 mb-md-0">
+                                <h3 class="mb-0 fs-4">
+                                    <i class="fas fa-layer-group me-2"></i>
+                                    {{ subject.name }} - Level {{ level }}
+                                </h3>
+                            </div>
+                            <div class="timer-badge">
+                                <i class="fas fa-clock me-2"></i>
+                                <span id="timer">00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Question Settings Info -->
+                        <div class="alert alert-info mb-4">
+                            <h5 class="alert-heading fs-5">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Quiz Information
+                            </h5>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <p class="mb-2">
+                                        <strong>Passing Score (%) Required:</strong> {{ question_settings.passing_score }}%
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if is_next_level and weak_areas %}
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading fs-5">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Focus Areas
+                            </h5>
+                            <p class="mb-0">This quiz focuses on areas where you need more practice:</p>
+                            {% if weak_areas.general_topics %}
+                            <p class="mb-1"><strong>Topics:</strong></p>
+                            <ul class="mb-2">
+                                {% for topic in weak_areas.general_topics %}
+                                <li>{{ topic.name }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            {% if weak_areas.subtopics %}
+                            <p class="mb-1"><strong>Subtopics:</strong></p>
+                            <ul class="mb-0">
+                                {% for subtopic in weak_areas.subtopics %}
+                                <li>{{ subtopic.name }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <form method="post" id="quizForm" action="{% url 'submit_quiz' subject.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="level" value="{{ level }}">
+                            
+                            <!-- Question Navigation -->
+                            <div class="question-navigation mb-4">
+                                {% for question in questions %}
+                                    <button type="button" class="question-nav-btn" 
+                                            data-question="{{ forloop.counter0 }}">
+                                        {{ forloop.counter }}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="questions-container">
+                                {% for question in questions %}
+                                <div class="question-container" id="question_{{ forloop.counter0 }}" 
+                                     {% if not forloop.first %}style="display: none;"{% endif %}>
+                                    <div class="card mb-4">
+                                        <div class="card-body">
+                                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-3">
+                                                <h5 class="card-title mb-2 mb-sm-0 fs-5">Question {{ forloop.counter }}</h5>
+                                                <span class="badge {% if question.difficulty == 'easy' %}bg-success{% elif question.difficulty == 'medium' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ question.difficulty|title }}
+                                                </span>
+                                            </div>
+                                            <p class="card-text fs-6">{{ question.question_text }}</p>
+                                            
+                                            <div class="form-group mt-3">
+                                                {% if question.question_type == 'multiple_choice' %}
+                                                    {% for choice in question.choices.all %}
+                                                    <div class="choice-item">
+                                                        <input class="form-check-input" type="radio" 
+                                                               name="answer_{{ question.id }}" 
+                                                               id="option_{{ question.id }}_{{ choice.id }}"
+                                                               value="{{ choice.id }}" required>
+                                                        <label class="form-check-label" for="option_{{ question.id }}_{{ choice.id }}">
+                                                            {{ choice.choice_text }}
+                                                        </label>
+                                                        {% if choice.is_correct_answer %}
+                                                        <input type="hidden" class="correct-answer" 
+                                                               data-question-id="{{ question.id }}" 
+                                                               value="{{ choice.id }}">
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endfor %}
+                                                {% elif question.question_type == 'true_false' %}
+                                                    <div class="true-false-choices">
+                                                        <div class="choice-item">
+                                                            <input class="form-check-input" type="radio" 
+                                                                   name="answer_{{ question.id }}" 
+                                                                   id="true_{{ question.id }}" 
+                                                                   value="True" required>
+                                                            <label class="form-check-label" for="true_{{ question.id }}">
+                                                                <span class="choice-letter">A</span>
+                                                                <span class="choice-text">True</span>
+                                                            </label>
+                                                        </div>
+                                                        <div class="choice-item">
+                                                            <input class="form-check-input" type="radio" 
+                                                                   name="answer_{{ question.id }}" 
+                                                                   id="false_{{ question.id }}" 
+                                                                   value="False" required>
+                                                            <label class="form-check-label" for="false_{{ question.id }}">
+                                                                <span class="choice-letter">B</span>
+                                                                <span class="choice-text">False</span>
+                                                            </label>
+                                                        </div>
+                                                        <input type="hidden" class="correct-answer" 
+                                                               data-question-id="{{ question.id }}" 
+                                                               value="{{ question.is_correct_answer }}">
+                                                    </div>
+                                                {% elif question.question_type == 'short_answer' %}
+                                                    <div class="short-answer-input">
+                                                        <input type="text" 
+                                                               class="form-control text-input" 
+                                                               name="answer_{{ question.id }}" 
+                                                               id="answer_{{ question.id }}"
+                                                               placeholder="Type your answer here..."
+                                                               required>
+                                                    </div>
+                                                {% elif question.question_type == 'essay' %}
+                                                    <div class="essay-input">
+                                                        <textarea class="form-control text-input" 
+                                                                  name="answer_{{ question.id }}" 
+                                                                  id="answer_{{ question.id }}"
+                                                                  rows="4" 
+                                                                  placeholder="Write your essay here..."
+                                                                  required></textarea>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <small class="text-muted d-block mt-3">
+                                                <i class="fas fa-book me-1"></i>Topic: {{ question.subtopic.name }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mt-4">
+                                <button type="button" class="btn btn-secondary btn-prev" disabled>
+                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                </button>
+                                <button type="button" class="btn btn-primary btn-next">
+                                    Next<i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
+                                    <button type="submit" class="btn btn-success btn-lg w-100 w-md-auto">
+                                        <i class="fas fa-check-circle me-2"></i>Submit Quiz
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    html, body {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+    }
+    
+    .questions-container {
+        position: relative;
+        min-height: 200px;
+        will-change: transform;
+    }
+    
+    .question-container {
+        position: relative;
+        width: 100%;
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+        display: none;
+    }
+    
+    .question-container.active {
+        display: block;
+    }
+    
+    .question-navigation {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        justify-content: flex-start;
+        max-width: 100%;
+        overflow-x: auto;
+        padding: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0.5rem;
+    }
+    
+    .question-navigation::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .question-nav-btn {
+        min-width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        background: white;
+        color: #495057;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        touch-action: manipulation;
+        scroll-snap-align: center;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .question-nav-btn:hover {
+        border-color: #007bff;
+        color: #007bff;
+    }
+    
+    .question-nav-btn.active {
+        background: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+    
+    .choice-item {
+        background: var(--light-bg);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .choice-item input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        margin: 0;
+        cursor: pointer;
+        z-index: 2;
+    }
+    
+    .choice-item label {
+        position: relative;
+        z-index: 1;
+        cursor: pointer;
+        width: 100%;
+        display: block;
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .choice-item label::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #dee2e6;
+        border-radius: 50%;
+        background: white;
+    }
+    
+    .choice-item input[type="radio"]:checked + label::before {
+        border-color: #007bff;
+        background: #007bff;
+    }
+    
+    .choice-item input[type="radio"]:checked + label::after {
+        content: '';
+        position: absolute;
+        left: 0.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: white;
+    }
+    
+    .text-input {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .text-input:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .text-input:hover {
+        border-color: #80bdff;
+    }
+    
+    .short-answer-input,
+    .essay-input {
+        margin: 1rem 0;
+    }
+    
+    .timer-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 1.1rem;
+        white-space: nowrap;
+    }
+    
+    .form-check-input {
+        margin-top: 0.25rem;
+    }
+    
+    .form-check-label {
+        margin-left: 0.5rem;
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    .choice-letter {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .card-header {
+        border-bottom: none;
+        z-index: 1000;
+    }
+    
+    .alert {
+        margin-bottom: 1.5rem;
+        border-radius: 0.5rem;
+    }
+    
+    .alert-heading {
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+    }
+    
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .question-navigation {
+            padding: 0.25rem;
+            margin-left: -0.5rem;
+            margin-right: -0.5rem;
+            width: calc(100% + 1rem);
+        }
+        
+        .question-nav-btn {
+            min-width: 36px;
+            height: 36px;
+            font-size: 0.9rem;
+        }
+        
+        .choice-item {
+            padding: 0.5rem;
+        }
+        
+        .timer-badge {
+            padding: 0.25rem 0.75rem;
+            font-size: 1rem;
+        }
+        
+        .card-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+    }
+    
+    .choice-item.correct-answer-highlight {
+        border: 2px solid #28a745 !important;
+        background-color: #eafbe7 !important;
+    }
+    .choice-item.wrong-answer-highlight {
+        border: 2px solid #dc3545 !important;
+        background-color: #fdeaea !important;
+    }
+    
+    .input-group {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .input-group .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: none;
+    }
+    
+    .input-group .input-group-text {
+        background-color: #fff;
+        border-left: none;
+    }
+    
+    .input-group .form-control:focus {
+        z-index: 2;
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .input-group .form-control:hover {
+        border-color: #80bdff;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Expose subject and level for JS
+const SUBJECT_ID = "{{ subject.id }}";
+const LEVEL = "{{ level }}";
+
+async function fetchCorrectAnswer(questionId) {
+    const url = `/api/get-correct-answer/?question_id=${questionId}&level=${LEVEL}&subject_id=${SUBJECT_ID}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.success) {
+            return data.correct_answer;
+        } else {
+            console.warn('API error:', data.error);
+            return null;
+        }
+    } catch (err) {
+        console.error('Fetch error:', err);
+        return null;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevent pull-to-refresh
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    document.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: false });
+    
+    document.addEventListener('touchmove', function(e) {
+        touchEndY = e.touches[0].clientY;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // If we're at the top of the page and trying to pull down
+        if (scrollTop <= 0 && touchEndY > touchStartY) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Persistent timer using localStorage
+    const QUIZ_LIMIT_SECONDS = 90 * 60; // 1 hour 30 minutes = 5400 seconds
+    const quizKey = `quiz_timer_{{ request.user.id }}_{{ subject.id }}_{{ level }}`;
+    let timeElapsed = parseInt(localStorage.getItem(quizKey));
+    console.log('Loaded timer:', timeElapsed, 'from key:', quizKey);
+    if (isNaN(timeElapsed)) {
+        timeElapsed = 0;
+    }
+    function updateTimerDisplay() {
+        let timeLeft = QUIZ_LIMIT_SECONDS - timeElapsed;
+        if (timeLeft < 0) timeLeft = 0;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('timer').textContent =
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    updateTimerDisplay();
+    const timerInterval = setInterval(() => {
+        timeElapsed++;
+        localStorage.setItem(quizKey, timeElapsed);
+        updateTimerDisplay();
+
+        let timeLeft = QUIZ_LIMIT_SECONDS - timeElapsed;
+        if (timeLeft === 300) { // 5 minutes left
+            alert('Only 5 minutes remaining!');
+        }
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            localStorage.removeItem(quizKey);
+            alert('Time is up! Your quiz will be submitted automatically.');
+            document.getElementById('quizForm').submit();
+        }
+    }, 1000);
+
+    // Initialize first question
+    const firstQuestion = document.querySelector('.question-container');
+    if (firstQuestion) {
+        firstQuestion.style.display = 'block';
+        firstQuestion.classList.add('active');
+    }
+
+    // Question navigation
+    const questions = document.querySelectorAll('.question-container');
+    const navButtons = document.querySelectorAll('.question-nav-btn');
+    let currentQuestionIndex = 0;
+    
+    function showQuestion(index) {
+        if (index < 0 || index >= questions.length) return;
+        
+        currentQuestionIndex = index;
+        
+        // Update active states
+        questions.forEach(q => {
+            q.style.display = 'none';
+            q.classList.remove('active');
+        });
+        
+        // Show new question
+        const newQuestion = questions[index];
+        newQuestion.style.display = 'block';
+        newQuestion.classList.add('active');
+        
+        // Update navigation buttons
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        navButtons[index].classList.add('active');
+        
+        // Update prev/next buttons
+        const prevButtons = document.querySelectorAll('.btn-prev');
+        const nextButtons = document.querySelectorAll('.btn-next');
+        
+        prevButtons.forEach(btn => {
+            btn.disabled = index === 0;
+        });
+        nextButtons.forEach(btn => {
+            btn.disabled = index === questions.length - 1;
+        });
+    }
+    
+    // Navigation buttons
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showQuestion(currentQuestionIndex + 1);
+        });
+    });
+    
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showQuestion(currentQuestionIndex - 1);
+        });
+    });
+    
+    // Question navigation buttons
+    navButtons.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+            showQuestion(index);
+        });
+    });
+    
+    // Fix choice selection
+    document.querySelectorAll('.choice-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    });
+    
+    // Fix text input interaction
+    const textInputs = document.querySelectorAll('.text-input');
+    
+    textInputs.forEach(input => {
+        // Remove any existing event listeners
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+        
+        // Add direct event listeners
+        newInput.onclick = function(e) {
+            e.stopPropagation();
+            this.focus();
+        };
+        
+        newInput.onfocus = function(e) {
+            e.stopPropagation();
+        };
+        
+        newInput.onblur = function(e) {
+            e.stopPropagation();
+        };
+        
+        newInput.onmousedown = function(e) {
+            e.stopPropagation();
+        };
+        
+        // Ensure the input is enabled
+        newInput.disabled = false;
+        newInput.readOnly = false;
+    });
+    
+    // Form submission
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        let allAnswered = true;
+        let unansweredQuestions = [];
+        
+        // Check radio buttons
+        const radioGroups = document.querySelectorAll('input[type="radio"]');
+        const radioGroupNames = new Set(Array.from(radioGroups).map(radio => radio.name));
+        
+        for (const name of radioGroupNames) {
+            const checked = document.querySelector(`input[name="${name}"]:checked`);
+            if (!checked) {
+                allAnswered = false;
+                const questionNumber = name.split('_')[1];
+                unansweredQuestions.push(`Question ${questionNumber}`);
+            }
+        }
+        
+        if (!allAnswered) {
+            alert('Please answer the following questions:\n' + unansweredQuestions.join('\n'));
+            return;
+        }
+        
+        // Clear timer on successful submission
+        clearInterval(timerInterval);
+        localStorage.removeItem(quizKey);
+        
+        // Submit the form data
+        const formData = new FormData(this);
+        formData.append('time_elapsed', timeElapsed);
+        
+        fetch('{% url "submit_quiz" subject_id=subject.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                alert(`Quiz submitted successfully!\nScore: ${data.score.toFixed(1)}%`);
+                
+                // Redirect to study material preferences page with required arguments
+                window.location.href = `/study-material-preferences/${data.subject_id}/${data.score.toFixed(1)}/`;
+            } else {
+                alert('Error submitting quiz: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the quiz. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %} 

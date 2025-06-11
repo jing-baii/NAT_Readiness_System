@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(45deg, #4e73df, #224abe);">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-contract me-2"></i>
+                        <h2 class="mb-0">Terms of Service</h2>
+                    </div>
+                </div>
+                <div class="card-body bg-light">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="terms-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">1. Acceptance of Terms</h3>
+                                <p class="text-muted">By accessing and using NAT Readiness, you agree to be bound by these Terms of Service and all applicable laws and regulations.</p>
+                                <div class="alert alert-info mt-3 border-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Please read these terms carefully before using our services.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="terms-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">2. User Responsibilities</h3>
+                                <p class="text-muted">As a user of NAT Readiness, you agree to:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-check-circle text-success me-2"></i>Provide accurate and complete information</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-check-circle text-success me-2"></i>Maintain the security of your account</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-check-circle text-success me-2"></i>Use the platform for educational purposes only</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-check-circle text-success me-2"></i>Not share your account credentials</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="terms-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">3. Intellectual Property</h3>
+                                <p class="text-muted">All content and materials available on NAT Readiness are protected by intellectual property rights. Users may not:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-times-circle text-danger me-2"></i>Copy or reproduce any content without permission</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-times-circle text-danger me-2"></i>Modify or create derivative works</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-times-circle text-danger me-2"></i>Distribute or publicly display content</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-times-circle text-danger me-2"></i>Use content for commercial purposes</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="terms-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">4. Termination</h3>
+                                <p class="text-muted">We reserve the right to terminate or suspend access to our service for any user who violates these terms or engages in inappropriate behavior.</p>
+                                <div class="alert alert-warning mt-3 border-0">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Violation of these terms may result in immediate account termination.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

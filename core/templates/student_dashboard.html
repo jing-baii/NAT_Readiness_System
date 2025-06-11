@@ -1,0 +1,1125 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    /* Modern Dashboard Styles */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        --success-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        --info-gradient: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+        --transition: all 0.3s ease;
+    }
+
+    .dashboard-container {
+        background-color: #f5f6fa;
+        min-height: 100vh;
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        background: white;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        box-shadow: var(--hover-shadow);
+        transform: translateY(-2px);
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: var(--transition);
+        z-index: 0;
+    }
+
+    .stat-card:hover::before {
+        opacity: 0.05;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+    }
+
+    .stat-icon.primary {
+        background: var(--primary-gradient);
+    }
+
+    .stat-icon.success {
+        background: var(--success-gradient);
+    }
+
+    .stat-icon.info {
+        background: var(--info-gradient);
+    }
+
+    .stat-icon i {
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .chart-container {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+    }
+
+    .progress-bar {
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+
+    .progress-bar.bg-success {
+        background: var(--success-gradient) !important;
+    }
+
+    .progress-bar.bg-info {
+        background: var(--info-gradient) !important;
+    }
+
+    .progress-bar.bg-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%) !important;
+    }
+
+    .progress-bar.bg-danger {
+        background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%) !important;
+    }
+
+    .topic-card {
+        border: 1px solid rgba(44, 62, 80, 0.1);
+        transition: var(--transition);
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+
+    .topic-card:hover {
+        border-color: #3498db;
+        transform: translateY(-2px);
+    }
+
+    .topic-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .topic-icon i {
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .badge {
+        padding: 0.5em 0.8em;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    .badge.bg-primary {
+        background: var(--primary-gradient) !important;
+    }
+
+    .badge.bg-success {
+        background: var(--success-gradient) !important;
+    }
+
+    .badge.bg-info {
+        background: var(--info-gradient) !important;
+    }
+
+    .list-group-item {
+        border: none;
+        border-radius: 8px !important;
+        margin-bottom: 0.5rem;
+        transition: var(--transition);
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+        transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #3498db;
+        color: #3498db;
+        transition: var(--transition);
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary-gradient);
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .chart-container {
+            padding: 1rem;
+        }
+
+        .topic-card {
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* Animation Classes */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-in {
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(-20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    .dashboard-header {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .welcome-section {
+        background: var(--primary-gradient, linear-gradient(135deg, #2c3e50 0%, #3498db 100%));
+        color: var(--on-primary, #fff);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .profile-container {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        flex-shrink: 0;
+        width: 200px;
+    }
+
+    .profile-picture {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid rgba(13, 110, 253, 0.3);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+
+    .profile-picture img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-picture .default-avatar {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 3rem;
+    }
+
+    .profile-name {
+        font-weight: 600;
+        color: #333;
+        text-align: center;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 600px;
+    }
+
+    .welcome-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        position: relative;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+        position: relative;
+    }
+
+    .welcome-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        position: relative;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+        }
+        .profile-container {
+            width: 100%;
+            order: -1;
+        }
+    }
+
+    .motivational-section {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .motivational-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(52, 152, 219, 0.1) 0%, rgba(44, 62, 80, 0.1) 100%);
+        z-index: 1;
+    }
+
+    .motivational-quote {
+        font-size: 1.2rem;
+        font-style: italic;
+        color: #ffffff;
+        margin-bottom: 1rem;
+        text-align: center;
+        position: relative;
+        min-height: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        backdrop-filter: blur(5px);
+        z-index: 2;
+        animation: slideIn 0.6s ease-out;
+    }
+
+    .quote-text {
+        color: #ffffff;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease-out;
+    }
+
+    .quote-author {
+        font-size: 0.9rem;
+        color: #ecf0f1;
+        font-style: normal;
+        margin-top: 0.5rem;
+        opacity: 0.9;
+        animation: fadeIn 1.2s ease-out;
+    }
+
+    .quote-author::before {
+        content: "—";
+        margin-right: 0.5rem;
+        color: #bdc3c7;
+    }
+
+    .encourage-button {
+        background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+        color: #2c3e50;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 2;
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .encourage-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(236, 240, 241, 0.3);
+        color: #2c3e50;
+    }
+
+    .text-center h4 {
+        color: #ffffff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .text-center p {
+        color: #ecf0f1;
+        animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Add animation classes for quote transitions */
+    .quote-text, .quote-author {
+        transition: opacity 0.5s ease-out;
+    }
+
+    .quote-text.fade-out, .quote-author.fade-out {
+        opacity: 0;
+    }
+
+    .quote-text.fade-in, .quote-author.fade-in {
+        opacity: 1;
+    }
+
+    .recent-questions {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .question-card {
+        border-left: 4px solid #0d6efd;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: var(--transition);
+    }
+
+    .question-card:hover {
+        transform: translateX(5px);
+        box-shadow: var(--card-shadow);
+    }
+
+    .question-text {
+        font-weight: 500;
+        color: #212529;
+        margin-bottom: 0.5rem;
+    }
+
+    .question-meta {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Recommended Videos Styles */
+    .recommended-videos {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .recommended-videos .list-group-item {
+        border: none;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background-color: white;
+        border-radius: 6px !important;
+        transition: all 0.3s ease;
+    }
+
+    .recommended-videos .list-group-item:hover {
+        transform: translateX(5px);
+        background-color: #f0f7ff;
+    }
+
+    .recommended-videos .badge {
+        transition: all 0.3s ease;
+    }
+
+    .recommended-videos .list-group-item:hover .badge {
+        transform: scale(1.1);
+    }
+
+    .recommended-videos h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .recommended-videos .text-truncate {
+        font-size: 0.9rem;
+    }
+
+    .recommended-videos small {
+        font-size: 0.8rem;
+    }
+
+    .video-item {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .video-item .ratio {
+        background: #000;
+    }
+
+    .video-item iframe {
+        border: none;
+    }
+
+    .video-info {
+        padding: 1rem;
+    }
+
+    .video-info h6 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .video-info small {
+        font-size: 0.8rem;
+    }
+
+    .video-info .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+    }
+
+    .video-thumbnail {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .video-thumbnail:hover {
+        transform: scale(1.02);
+    }
+
+    .video-thumbnail img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+
+    .play-button {
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+
+    .video-thumbnail:hover .play-button {
+        opacity: 1;
+    }
+
+    .play-button i {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    #videoFrame {
+        border: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    .video-info {
+        padding: 1rem;
+        background: white;
+    }
+
+    .video-info h6 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .video-info small {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .video-info .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        background: var(--primary-gradient);
+        border: none;
+    }
+
+    .video-info .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container py-4" style="margin-top: 80px;">
+    <div class="container-fluid">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="profile-container">
+                <div class="profile-picture">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile }}'s profile picture">
+                    {% else %}
+                        <div class="default-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <h3 class="profile-name">{{ user.profile }}</h3>
+            </div>
+            <div class="welcome-section">
+                <div class="welcome-content">
+                    <div class="welcome-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h1 class="welcome-title">Welcome back!</h1>
+                    <p class="welcome-subtitle">Track your progress and continue learning</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- After the welcome section and before the stats cards -->
+        <div class="motivational-section fade-in">
+            <div class="motivational-quote" id="motivationalQuote">
+                <div class="quote-text"></div>
+                <div class="quote-author"></div>
+            </div>
+            <div class="text-center">
+                <h4 class="mb-3">Ready to Challenge Yourself?</h4>
+                <p class="text-muted mb-4">Take a look at these recent questions and test your knowledge!</p>
+                <a href="{% url 'quiz_by_level' %}" class="encourage-button">
+                    <i class="fas fa-play-circle me-2"></i>Start Learning Now
+                </a>
+            </div>
+            
+            <div class="recent-questions">
+                <h5 class="mb-3">Recent Questions</h5>
+                {% for question in recent_questions|slice:":3" %}
+                <div class="question-card">
+                    <div class="question-text">{{ question.text|truncatechars:100 }}</div>
+                    <div class="question-meta">
+                        <i class="fas fa-bookmark me-1"></i>{{ question.topic.name }}
+                        <span class="ms-3"><i class="fas fa-clock me-1"></i>{{ question.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No recent questions available. Start your learning journey!</p>
+                {% endfor %}
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-md-4">
+                <div class="card stat-card h-100 fade-in">
+                    <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                            <div class="stat-icon primary me-3">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">Total Questions</h6>
+                                <h3 class="mb-0">{{ total_questions }}</h3>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>New questions available
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+                <div class="card stat-card h-100 fade-in">
+                    <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                            <div class="stat-icon success me-3">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">Recent Responses</h6>
+                                <h3 class="mb-0">{{ recent_responses|length }}</h3>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>Keep practicing!
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+                <div class="card stat-card h-100 fade-in">
+                    <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                            <div class="stat-icon info me-3">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-1">Average Success Rate</h6>
+                                <h3 class="mb-0">{{ average_success_rate }}%</h3>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>Improving!
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Analytics -->
+        <div class="row mb-4">
+        <div class="col-12">
+            <div class="card fade-in">
+                    <div class="card-header bg-transparent border-0 p-4">
+                        <h5 class="card-title mb-0">Performance Analytics</h5>
+                </div>
+                    <div class="card-body p-4">
+                    <div class="row g-4">
+                            <div class="col-12 col-md-8">
+                                <div class="chart-container">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                                <div class="stats-container">
+                                <div class="stat-item mb-4">
+                                        <h6 class="text-muted mb-2">Average Success Rate</h6>
+                                    <div class="d-flex align-items-center">
+                                            <h4 class="mb-0">{{ average_success_rate }}%</h4>
+                                            <span class="ms-2 badge {% if improvement_rate > 0 %}bg-success{% elif improvement_rate < 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {% if improvement_rate > 0 %}
+                                            <i class="fas fa-arrow-up"></i>
+                                                {% elif improvement_rate < 0 %}
+                                                <i class="fas fa-arrow-down"></i>
+                                                {% else %}
+                                                <i class="fas fa-minus"></i>
+                                                {% endif %}
+                                            {{ improvement_rate }}%
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="stat-item">
+                                        <h6 class="text-muted mb-2">Strongest Subject</h6>
+                                    <div class="d-flex align-items-center">
+                                            <h4 class="mb-0">{{ strongest_subject.name }}</h4>
+                                        <span class="ms-2 badge bg-success">{{ strongest_subject.success_rate }}%</span>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subject Performance -->
+                    <div class="subject-performance mt-4">
+                            <h6 class="text-muted mb-3">Performance by Subject</h6>
+                            {% for subject, data in performance_by_subject.items %}
+                        <div class="subject-progress mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-medium">{{ subject }}</span>
+                                    <span class="text-muted">{{ data.success_rate }}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar {% if data.success_rate >= 80 %}bg-success{% elif data.success_rate >= 60 %}bg-info{% elif data.success_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                         style="width: {{ data.success_rate }}%">
+                            </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Topics -->
+        <div class="row mb-4">
+        <div class="col-12">
+            <div class="card fade-in">
+                    <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Available Topics</h5>
+                        <a href="{% url 'quiz_by_level' %}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>View All
+                        </a>
+                </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                        {% for topic in topics %}
+                        <div class="col-12 col-sm-6 col-lg-4">
+                                <div class="card topic-card h-100">
+                                    <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="topic-icon me-3">
+                                            <i class="fas fa-book-open"></i>
+                                        </div>
+                                            <h5 class="card-title mb-0">{{ topic.name }}</h5>
+                                    </div>
+                                        <p class="card-text text-muted mb-3">{{ topic.description }}</p>
+                                    
+                                    <!-- Recommended Videos -->
+                                    {% if recommended_videos|get_item:topic.id %}
+                                    <div class="recommended-videos mb-3">
+                                        <h6 class="text-primary mb-2">
+                                            <i class="fas fa-video me-2"></i>Recommended Videos
+                                        </h6>
+                                        <div class="list-group list-group-flush">
+                                            {% for video in recommended_videos|get_item:topic.id %}
+                                                {% if 'youtube.com' in video.url or 'youtu.be' in video.url %}
+                                                    {% with video_id=video.url|youtube_id %}
+                                                        {% if video_id %}
+                                                            <div class="video-item mb-3">
+                                                                <div class="ratio ratio-16x9 mb-2">
+                                                                    <iframe 
+                                                                        src="https://www.youtube.com/embed/{{ video_id }}?autoplay=0&rel=0" 
+                                                                        title="{{ video.title }}"
+                                                                        frameborder="0" 
+                                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                                        allowfullscreen>
+                                                                    </iframe>
+                                                                </div>
+                                                                <div class="video-info">
+                                                                    <h6 class="mb-1">{{ video.title }}</h6>
+                                                                    <small class="text-muted d-block mb-2">{{ video.subtopic.name }}</small>
+                                                                    <a href="{% url 'track_link_access' video.id %}" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-external-link-alt me-1"></i>Open in YouTube
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            <a href="{% url 'track_link_access' video.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <span class="d-block text-truncate" style="max-width: 200px;">{{ video.title }}</span>
+                                                                    <small class="text-muted">{{ video.subtopic.name }}</small>
+                                                                </div>
+                                                                <span class="badge bg-primary rounded-pill">
+                                                                    <i class="fas fa-play me-1"></i>Watch
+                                                                </span>
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% else %}
+                                                    <a href="{% url 'track_link_access' video.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <span class="d-block text-truncate" style="max-width: 200px;">{{ video.title }}</span>
+                                                            <small class="text-muted">{{ video.subtopic.name }}</small>
+                                                        </div>
+                                                        <span class="badge bg-primary rounded-pill">
+                                                            <i class="fas fa-play me-1"></i>Watch
+                                                        </span>
+                                                    </a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Subtopics -->
+                                    <div class="list-group list-group-flush">
+                                        {% for subtopic in topic.subtopics.all %}
+                                        <a href="{% url 'take_quiz' subtopic.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                            <span>{{ subtopic.name }}</span>
+                                            <span class="badge bg-primary rounded-pill">{{ subtopic.questions.count }} questions</span>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                                <p class="text-center text-muted">No topics available yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Materials Section -->
+    {% if study_materials %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-header bg-primary text-white p-4">
+                        <h5 class="card-title mb-0">
+                    <i class="fas fa-book me-2"></i>Recommended Study Materials
+                </h5>
+            </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted mb-4">Here are some helpful resources to improve your understanding:</p>
+                <div class="list-group">
+                    {% for material in study_materials %}
+                            <a href="{% url 'track_link_access' material.id %}" class="list-group-item list-group-item-action p-4">
+                                <div class="d-flex flex-column flex-md-row w-100 justify-content-between align-items-start align-items-md-center gap-3">
+                            <div>
+                                        <h6 class="mb-2">{{ material.title }}</h6>
+                                        <p class="mb-2 text-muted">{{ material.description }}</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-primary">{{ material.subject }}</span>
+                                    <span class="badge bg-info">{{ material.topic }}</span>
+                                    <span class="badge bg-secondary">{{ material.subtopic }}</span>
+                                </div>
+                            </div>
+                            <div class="text-start text-md-end">
+                                        <div class="progress mb-2" style="width: 100px;">
+                                    <div class="progress-bar {% if material.success_rate < 40 %}bg-danger{% elif material.success_rate < 70 %}bg-warning{% else %}bg-success{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ material.success_rate }}%"
+                                         aria-valuenow="{{ material.success_rate }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ material.success_rate }}% success rate</small>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+                    <div class="card-footer p-4">
+                        <a href="{% url 'get_recommendations' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i>View All Recommendations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch quotes from static JSON file
+    fetch("{% static 'quotes/quotes.json' %}")
+        .then(response => response.json())
+        .then(quotes => {
+            function getRandomQuote() {
+                const randomIndex = Math.floor(Math.random() * quotes.length);
+                return quotes[randomIndex];
+            }
+
+            function updateQuote() {
+                const quoteElement = document.getElementById('motivationalQuote');
+                const quoteText = quoteElement.querySelector('.quote-text');
+                const quoteAuthor = quoteElement.querySelector('.quote-author');
+
+                // Add fade-out animation
+                quoteText.classList.add('fade-out');
+                quoteAuthor.classList.add('fade-out');
+
+                // Wait for fade-out to complete
+                setTimeout(() => {
+                    const quote = getRandomQuote();
+                    quoteText.textContent = quote.text;
+                    quoteAuthor.textContent = quote.author;
+
+                    // Add fade-in animation
+                    quoteText.classList.remove('fade-out');
+                    quoteAuthor.classList.remove('fade-out');
+                    quoteText.classList.add('fade-in');
+                    quoteAuthor.classList.add('fade-in');
+                }, 500);
+            }
+
+            // Initial quote
+            updateQuote();
+
+            // Update quote every 30 seconds
+            setInterval(updateQuote, 30000);
+        });
+
+    // Performance Chart
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const performanceData = {
+        labels: {{ performance_dates|safe }},
+        datasets: [{
+            label: 'Success Rate',
+            data: {{ performance_rates|safe }},
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: performanceData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#000',
+                    bodyColor: '#666',
+                    borderColor: '#ddd',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `Success Rate: ${context.parsed.y}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+        });
+    });
+</script>
+{% endblock %}{% endblock %}

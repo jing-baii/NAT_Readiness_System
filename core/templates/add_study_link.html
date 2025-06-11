@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Add New Study Link</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post" id="studyLinkForm">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="subtopic" class="form-label">Subtopic</label>
+                    <select class="form-select" id="subtopic" name="subtopic" required>
+                        {% for subtopic in subtopics %}
+                            <option value="{{ subtopic.id }}">{{ subtopic.topic.name }} - {{ subtopic.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="url" class="form-label">URL</label>
+                    <input type="url" class="form-control" id="url" name="url" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="material_type" class="form-label">Material Type</label>
+                    <select class="form-select" id="material_type" name="material_type" required>
+                        <option value="video">Video</option>
+                        <option value="text">Text</option>
+                        <option value="game">Game</option>
+                        <option value="quiz">Quiz</option>
+                        <option value="interactive">Interactive</option>
+                        <option value="practice">Practice Problems</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Add Study Link</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#studyLinkForm').submit(function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: '{% url "add_study_link" %}',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                alert('Study link added successfully!');
+                window.location.href = '{% url "admin_dashboard" %}';
+            },
+            error: function(xhr, status, error) {
+                alert('Error adding study link. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

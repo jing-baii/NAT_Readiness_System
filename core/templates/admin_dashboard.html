@@ -1,0 +1,774 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Main Container -->
+<div class="container-fluid py-4 admin-dashboard">
+    <!-- Header Section -->
+    <div class="row mb-4" style="position: relative; z-index: 1000; margin-top: 32px;">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Admin Dashboard</h2>
+                    <p class="text-muted mb-0">Welcome back, {{ user.username }} !</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="scrollable-content">
+        <!-- Skeleton Loader (shown if no data) -->
+        <div id="dashboardSkeleton" class="skeleton-loader" {% if total_students %}style="display:none;"{% endif %}>
+            <div class="row g-4 mb-4">
+                {% for i in "1234" %}
+                <div class="col-md-3">
+                    <div class="skeleton-card mb-3" style="height: 120px;"></div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="skeleton-card mb-3" style="height: 80px;"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="skeleton-card mb-3" style="height: 220px;"></div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="skeleton-card mb-3" style="height: 220px;"></div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="skeleton-card mb-3" style="height: 220px;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Real Content (hidden until skeleton is gone) -->
+        <div id="dashboardContent" {% if not total_students %}style="display:none;"{% endif %}>
+        <!-- Statistics Overview Section -->
+        <div class="row g-4 mb-4">
+            <!-- Total Students Card -->
+            <div class="col-md-3">
+                <div class="card h-100 fade-in">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-users fa-2x text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">Total Students</h6>
+                                <h3 class="mb-0">{{ total_students }}</h3>
+                                <small class="text-success">
+                                    <i class="fas fa-arrow-up me-1"></i>5% from last month
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Questions Card -->
+            <div class="col-md-3">
+                <div class="card h-100 fade-in">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-question-circle fa-2x text-success"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">Total Questions</h6>
+                                <h3 class="mb-0">{{ total_questions }}</h3>
+                                <small class="text-success">
+                                    <i class="fas fa-arrow-up me-1"></i>12% from last month
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Study Links Card -->
+            <div class="col-md-3">
+                <div class="card h-100 fade-in">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-link fa-2x text-info"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">Study Links</h6>
+                                <h3 class="mb-0">{{ total_links }}</h3>
+                                <small class="text-success">
+                                    <i class="fas fa-arrow-up me-1"></i>8% from last month
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Attempts Card -->
+            <div class="col-md-3">
+                <div class="card h-100 fade-in">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-check-circle fa-2x text-warning"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">No. of Subtopics</h6>
+                                <h3 class="mb-0">{{ total_subtopics }}</h3>
+                                <small class="text-success">
+                                    <i class="fas fa-arrow-up me-1"></i>15% from last month
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="{% url 'add_question' %}" class="btn btn-primary w-100">
+                                    <i class="fas fa-plus-circle me-2"></i>Add Question
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'add_study_link' %}" class="btn btn-success w-100">
+                                    <i class="fas fa-link me-2"></i>Add Study Link
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'add_subject' %}" class="btn btn-info w-100">
+                                    <i class="fas fa-book me-2"></i>Add Subject
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'view_analytics' %}" class="btn btn-warning w-100">
+                                    <i class="fas fa-chart-bar me-2"></i>View Analytics
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'performance_metrics' %}" class="btn btn-secondary w-100">
+                                    <i class="fas fa-table me-2"></i>Performance Metrics
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Tables Section -->
+        <div class="row">
+            <!-- Recent Student Responses Table -->
+            <div class="col-12 mb-4">
+                <div class="card fade-in">
+                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Recent Student Responses</h5>
+                        <a href="{% url 'list_responses' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Question</th>
+                                        <th>Response</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for response in recent_responses %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle me-2">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                {{ response.student.username }}
+                                            </div>
+                                        </td>
+                                        <td>{{ response.question.question_text|truncatechars:50 }}</td>
+                                        <td>{{ response.answer|truncatechars:50 }}</td>
+                                        <td>
+                                            {% if response.is_correct %}
+                                            <span class="badge bg-success">Correct</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Incorrect</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ response.submitted_at|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            <a href="{% url 'view_response' response.id %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">No recent responses</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Performance Table -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 fade-in">
+                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Student Performance</h5>
+                        <a href="{% url 'student_performance' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover">
+                                <thead class="sticky-top bg-white">
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Total Attempts</th>
+                                        <th>Correct Answers</th>
+                                        <th>Success Rate</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for performance in student_performance %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle me-2">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                {{ performance.student.username }}
+                                            </div>
+                                        </td>
+                                        <td>{{ performance.total_attempts }}</td>
+                                        <td>{{ performance.correct_answers }}</td>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center" style="min-width:120px;">
+                                                <div class="progress progress-bar-custom flex-grow-1" style="height: 16px; margin-right: 0.5rem;">
+                                                    <div class="progress-bar {% if performance.success_rate >= 70 %}bg-success{% elif performance.success_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                         role="progressbar"
+                                                         style="width: {{ performance.success_rate }}%; border-radius: 8px;"
+                                                         aria-valuenow="{{ performance.success_rate }}"
+                                                         aria-valuemin="0"
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <span class="fw-bold text-dark" style="min-width: 38px; text-align: right;">{{ performance.success_rate }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'student_details' performance.student.id %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="fas fa-chart-line"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No performance data available</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Statistics Table -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 fade-in">
+                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Level 1 Question Statistics</h5>
+                        <div class="d-flex gap-2">
+                            <select id="subjectFilter" class="form-select form-select-sm" style="width: 200px;">
+                                <option value="">All Subjects</option>
+                                {% for subject in subjects %}
+                                    <option value="{{ subject.name }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <a href="{% url 'question_stats' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% regroup question_stats|dictsort:"question.subtopic.general_topic.subject.name" by question.subtopic.general_topic.subject.name as subject_list %}
+                        {% for subject in subject_list %}
+                            <div class="subject-section mb-4" data-subject="{{ subject.grouper }}">
+                                <h6 class="text-muted mb-3">{{ subject.grouper }}</h6>
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover">
+                                        <thead class="sticky-top bg-white">
+                                            <tr>
+                                                <th>Question</th>
+                                                <th>Total Attempts</th>
+                                                <th>Success Rate</th>
+                                                <th>Difficulty</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for stat in subject.list %}
+                                                {% if stat.question.level == 1 %}
+                                                <tr>
+                                                    <td>{{ stat.question.question_text|truncatechars:50 }}</td>
+                                                    <td>{{ stat.total_attempts }}</td>
+                                                    <td class="align-middle">
+                                                        <div class="d-flex align-items-center" style="min-width:120px;">
+                                                            <div class="progress progress-bar-custom flex-grow-1" style="height: 16px; margin-right: 0.5rem;">
+                                                                <div class="progress-bar {% if stat.success_rate >= 70 %}bg-success{% elif stat.success_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                                     role="progressbar"
+                                                                     style="width: {{ stat.success_rate }}%; border-radius: 8px;"
+                                                                     aria-valuenow="{{ stat.success_rate }}"
+                                                                     aria-valuemin="0"
+                                                                     aria-valuemax="100">
+                                                                </div>
+                                                            </div>
+                                                            <span class="fw-bold text-dark" style="min-width: 38px; text-align: right;">{{ stat.success_rate }}%</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% if stat.total_attempts == total_students %}
+                                                            <span class="badge {% if stat.difficulty == 'Very Easy' %}bg-success{% elif stat.difficulty == 'Easy' %}bg-info{% elif stat.difficulty == 'Moderate' %}bg-warning{% elif stat.difficulty == 'Hard' %}bg-orange{% else %}bg-danger{% endif %}">
+                                                                {{ stat.difficulty }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary" title="Waiting for all students to attempt">
+                                                                Pending
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'edit_question' stat.question.id %}" class="btn btn-sm btn-outline-primary" title="Edit Question">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a href="{% url 'question_details' stat.question.id %}" class="btn btn-sm btn-outline-info" title="View Details">
+                                                            <i class="fas fa-info-circle"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">No level 1 questions available for this subject</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center text-muted">No level 1 questions available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+.admin-dashboard {
+    padding-top: 0;
+}
+
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 1rem;
+}
+
+/* Custom scrollbar */
+.scrollable-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Ensure tables are responsive */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+}
+
+/* Add some spacing for better readability */
+.card {
+    margin-bottom: 1rem;
+}
+
+/* Ensure progress bars are visible */
+.progress {
+    height: 6px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+}
+
+.progress-bar-custom {
+    height: 16px;
+    border-radius: 8px;
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+    min-width: 60px;
+}
+
+.progress-bar-custom .progress-bar {
+    border-radius: 8px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    min-width: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.card-header {
+    padding: 1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.form-select-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+}
+
+.subject-section {
+    transition: all 0.3s ease;
+}
+
+.subject-section:not(:last-child) {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 1rem;
+}
+
+.bg-orange {
+    background-color: #fd7e14 !important;
+    color: white;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-header {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.5rem;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.6em;
+    }
+
+    .avatar-circle {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+
+    .progress {
+        height: 4px;
+    }
+
+    .form-select-sm {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding: 0.75rem;
+    }
+
+    .card-header {
+        padding: 0.75rem;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.5rem;
+        font-size: 0.8125rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.375rem;
+        font-size: 0.8125rem;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.3em 0.5em;
+    }
+}
+
+/* Touch-friendly styles */
+@media (hover: none) {
+    .table-responsive {
+        margin: 0 -0.75rem;
+        padding: 0 0.75rem;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .form-select-sm {
+        padding: 0.5rem;
+        font-size: 16px;
+    }
+}
+
+/* Skeleton Loading Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton-loader {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.skeleton-card {
+    background: #f0f0f0;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 20%,
+        rgba(255, 255, 255, 0.5) 60%,
+        rgba(255, 255, 255, 0) 100%);
+    animation: shimmer 2s infinite;
+    background-size: 1000px 100%;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #fff;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var skeleton = document.getElementById('dashboardSkeleton');
+    var content = document.getElementById('dashboardContent');
+    
+    // Get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    
+    // If no data, fetch via AJAX
+    if (!content || content.style.display === 'none') {
+        console.log('Fetching dashboard data...');
+        // Ensure skeleton is visible
+        if (skeleton) {
+            skeleton.style.display = 'block';
+            skeleton.style.opacity = '1';
+        }
+        
+        fetch(window.location.pathname + '?skeleton=0', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html',
+                'X-CSRFToken': csrftoken
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(html => {
+            console.log('Received dashboard data');
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            var newContent = tempDiv.querySelector('#dashboardContent');
+            if (newContent) {
+                content.innerHTML = newContent.innerHTML;
+                // Fade out skeleton
+                if (skeleton) {
+                    skeleton.style.opacity = '0';
+                    setTimeout(() => {
+                        skeleton.style.display = 'none';
+                        content.style.display = 'block';
+                    }, 300);
+                }
+                console.log('Dashboard content updated');
+            } else {
+                console.error('Could not find dashboard content in response');
+            }
+            // Re-attach event listeners for subject filter, etc.
+            attachAdminDashboardListeners();
+        })
+        .catch(error => {
+            console.error('Error loading dashboard:', error);
+            // Show error message to user
+            if (skeleton) {
+                skeleton.innerHTML = `
+                    <div class="alert alert-danger m-4" role="alert">
+                        <h4 class="alert-heading">Error Loading Dashboard</h4>
+                        <p>There was a problem loading the dashboard data. Please try refreshing the page.</p>
+                        <hr>
+                        <p class="mb-0">If the problem persists, please contact support.</p>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        if (skeleton) {
+            skeleton.style.display = 'none';
+        }
+        content.style.display = 'block';
+        attachAdminDashboardListeners();
+    }
+
+    function attachAdminDashboardListeners() {
+        const subjectFilter = document.getElementById('subjectFilter');
+        const subjectSections = document.querySelectorAll('.subject-section');
+        if (subjectFilter) {
+            subjectFilter.addEventListener('change', function() {
+                const selectedSubject = this.value;
+                subjectSections.forEach(section => {
+                    if (selectedSubject === '' || section.dataset.subject === selectedSubject) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

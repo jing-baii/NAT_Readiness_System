@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="congrats-container">
+    <div class="confetti-container">
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="congrats-card">
+                    <div class="congrats-header">
+                        <div class="trophy-icon">🏆</div>
+                        <h1>Congratulations!</h1>
+                        <p class="lead">You've achieved an incredible milestone!</p>
+                    </div>
+
+                    <div class="achievement-details">
+                        <div class="achievement-card">
+                            <div class="achievement-icon">📚</div>
+                            <h3>Total Subtopics Mastered</h3>
+                            <p class="achievement-value">{{ total_subtopics }}</p>
+                        </div>
+
+                        <div class="achievement-card">
+                            <div class="achievement-icon">⏱️</div>
+                            <h3>Total Study Time</h3>
+                            <p class="achievement-value">{{ total_study_time }} hours</p>
+                        </div>
+
+                        <div class="achievement-card">
+                            <div class="achievement-icon">🎯</div>
+                            <h3>Highest Level Achieved</h3>
+                            <p class="achievement-value">Level {{ highest_level }}</p>
+                        </div>
+                    </div>
+
+                    <div class="achievement-message">
+                        <h2>You've Mastered All Level 1 Quizzes!</h2>
+                        <p>Your dedication and hard work have paid off. You've successfully completed all level 1 quizzes with outstanding scores!</p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{% url 'survey' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-clipboard-check"></i> Take Required Survey
+                        </a>
+                        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-home"></i> Return to Dashboard
+                        </a>
+                    </div>
+
+                    <div class="share-achievement">
+                        <h3>Share Your Achievement</h3>
+                        <div class="share-buttons">
+                            <button class="share-btn facebook" onclick="shareOnFacebook()">
+                                <i class="fab fa-facebook-f"></i>
+                            </button>
+                            <button class="share-btn twitter" onclick="shareOnTwitter()">
+                                <i class="fab fa-twitter"></i>
+                            </button>
+                            <button class="share-btn linkedin" onclick="shareOnLinkedIn()">
+                                <i class="fab fa-linkedin-in"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .congrats-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .confetti-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #f00;
+        animation: confetti-fall 5s linear infinite;
+    }
+
+    .confetti:nth-child(1) { left: 10%; animation-delay: 0s; background: #f00; }
+    .confetti:nth-child(2) { left: 30%; animation-delay: 1s; background: #0f0; }
+    .confetti:nth-child(3) { left: 50%; animation-delay: 2s; background: #00f; }
+    .confetti:nth-child(4) { left: 70%; animation-delay: 3s; background: #ff0; }
+    .confetti:nth-child(5) { left: 90%; animation-delay: 4s; background: #f0f; }
+
+    @keyframes confetti-fall {
+        0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    .congrats-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        position: relative;
+        z-index: 2;
+        animation: slide-up 0.5s ease;
+    }
+
+    @keyframes slide-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .congrats-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .trophy-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .congrats-header h1 {
+        font-size: 3rem;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .congrats-header .lead {
+        font-size: 1.5rem;
+        color: #64748b;
+    }
+
+    .achievement-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .achievement-card {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    .achievement-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .achievement-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .achievement-card h3 {
+        color: #1e293b;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .achievement-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4f46e5;
+        margin: 0;
+    }
+
+    .achievement-message {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border-radius: 15px;
+        color: white;
+    }
+
+    .achievement-message h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .achievement-message p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #4f46e5;
+        color: #4f46e5;
+    }
+
+    .btn-outline-primary:hover {
+        background: #4f46e5;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .share-achievement {
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .share-achievement h3 {
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+    }
+
+    .share-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .share-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .share-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .facebook { background: #1877f2; }
+    .twitter { background: #1da1f2; }
+    .linkedin { background: #0077b5; }
+
+    @media (max-width: 768px) {
+        .congrats-card {
+            padding: 2rem;
+        }
+
+        .congrats-header h1 {
+            font-size: 2.5rem;
+        }
+
+        .achievement-details {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    function shareOnFacebook() {
+        const text = "I've mastered all Level 1 quizzes in my NAT Readiness course! 🎓 Check out my achievement!";
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    function shareOnTwitter() {
+        const text = "I've mastered all Level 1 quizzes in my NAT Readiness course! 🎓 Check out my achievement!";
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+        window.open(url, '_blank');
+    }
+
+    function shareOnLinkedIn() {
+        const text = "I've mastered all Level 1 quizzes in my NAT Readiness course! 🎓 Check out my achievement!";
+        const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}&summary=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+</script>
+{% endblock %} 

@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4" style="position: relative; z-index: 1;">
+    <!-- Loading Skeleton -->
+    <div id="loading-skeleton" style="position: relative; z-index: 2;">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                    <div>
+                        <div class="skeleton-text" style="width: 250px; height: 32px;"></div>
+                        <div class="skeleton-text" style="width: 200px; height: 20px; margin-top: 8px;"></div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <div class="skeleton-button" style="width: 180px; height: 38px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Skeleton -->
+        <div class="card fade-in shadow-sm">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><div class="skeleton-text" style="width: 120px; height: 20px;"></div></th>
+                            <th class="d-none d-md-table-cell"><div class="skeleton-text" style="width: 100px; height: 20px;"></div></th>
+                            <th class="d-none d-md-table-cell"><div class="skeleton-text" style="width: 100px; height: 20px;"></div></th>
+                            <th><div class="skeleton-text" style="width: 100px; height: 20px;"></div></th>
+                            <th><div class="skeleton-text" style="width: 80px; height: 20px;"></div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in '12345'|make_list %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="skeleton-avatar me-2"></div>
+                                    <div class="skeleton-text" style="width: 120px; height: 20px;"></div>
+                                </div>
+                            </td>
+                            <td class="d-none d-md-table-cell"><div class="skeleton-text" style="width: 80px; height: 20px;"></div></td>
+                            <td class="d-none d-md-table-cell"><div class="skeleton-text" style="width: 80px; height: 20px;"></div></td>
+                            <td>
+                                <div class="skeleton-progress" style="width: 100px; height: 20px;"></div>
+                            </td>
+                            <td>
+                                <div class="skeleton-button" style="width: 40px; height: 32px;"></div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actual Content -->
+    <div id="content" class="d-none" style="position: relative; z-index: 2;">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-1">Student Performance Overview</h2>
+                        <p class="text-muted mb-0">Detailed analysis of student performance</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card fade-in shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th class="d-none d-md-table-cell">Total Attempts</th>
+                            <th class="d-none d-md-table-cell">Correct Answers</th>
+                            <th>Success Rate</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for performance in performance_data %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-2">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ performance.student.username }}</div>
+                                        <div class="small text-muted d-md-none">
+                                            {{ performance.total_attempts }} attempts, {{ performance.correct_answers }} correct
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="d-none d-md-table-cell">{{ performance.total_attempts }}</td>
+                            <td class="d-none d-md-table-cell">{{ performance.correct_answers }}</td>
+                            <td>
+                                <div class="progress progress-bar-custom">
+                                    <div class="progress-bar {% if performance.success_rate >= 70 %}bg-success{% elif performance.success_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ performance.success_rate }}%"
+                                         aria-valuenow="{{ performance.success_rate }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ performance.success_rate }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{% url 'student_details' performance.student.id %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fas fa-chart-line"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No performance data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show loading skeleton immediately
+document.getElementById('loading-skeleton').classList.remove('d-none');
+document.getElementById('content').classList.add('d-none');
+
+// When the page is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide loading skeleton and show content with a fade effect
+    document.getElementById('loading-skeleton').classList.add('d-none');
+    document.getElementById('content').classList.remove('d-none');
+});
+</script>
+
+<style>
+.container-fluid {
+    margin-top: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .table {
+        font-size: 0.875rem;
+    }
+    
+    .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Skeleton Loading Styles */
+.skeleton-text {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+.skeleton-button {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 6px;
+}
+
+.skeleton-avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 50%;
+}
+
+.skeleton-progress {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.progress {
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 100px;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.progress-bar-custom {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.progress-bar-custom .progress-bar {
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Ensure content is above the header */
+#content, #loading-skeleton {
+    position: relative;
+    z-index: 2;
+}
+
+/* Add some spacing from the header */
+.py-4 {
+    padding-top: 2rem !important;
+}
+
+/* Responsive table styles */
+@media (max-width: 768px) {
+    .table-responsive {
+        margin: 0 -0.5rem;
+    }
+    
+    .table td, .table th {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .progress-bar-custom {
+        min-width: 80px;
+    }
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,264 @@
+<!-- Material Type Selection Modal -->
+<div class="modal fade" id="materialTypeModal" tabindex="-1" aria-labelledby="materialTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="materialTypeModalLabel">Select Your Preferred Learning Style</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Choose how you'd like to learn about this topic:</p>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary w-100 material-type-btn" data-type="video">
+                            <i class="fas fa-video me-2"></i>Video
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary w-100 material-type-btn" data-type="text">
+                            <i class="fas fa-book me-2"></i>Text
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary w-100 material-type-btn" data-type="game">
+                            <i class="fas fa-gamepad me-2"></i>Game
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary w-100 material-type-btn" data-type="quiz">
+                            <i class="fas fa-question-circle me-2"></i>Quiz
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary w-100 material-type-btn" data-type="interactive">
+                            <i class="fas fa-mouse-pointer me-2"></i>Interactive
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary w-100 material-type-btn" data-type="practice">
+                            <i class="fas fa-pencil-alt me-2"></i>Practice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Study Links Modal -->
+<div class="modal fade" id="studyLinksModal" tabindex="-1" aria-labelledby="studyLinksModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studyLinksModalLabel">Recommended Study Materials</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group" id="studyLinksList">
+                    <!-- Study links will be dynamically inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.material-type-btn {
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.material-type-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.material-type-btn i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1050;
+    overflow-x: hidden;
+    overflow-y: auto;
+    outline: 0;
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    margin: 1.75rem auto;
+    pointer-events: none;
+    z-index: 1051;
+}
+
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    pointer-events: auto;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    outline: 0;
+    z-index: 1052;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Fix modal backdrop */
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+/* Ensure modal is above other content */
+.modal.show {
+    z-index: 1050;
+}
+
+/* Fix body scroll */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize modals with proper options
+    const materialTypeModal = new bootstrap.Modal(document.getElementById('materialTypeModal'), {
+        backdrop: true,
+        keyboard: true,
+        focus: true
+    });
+    
+    const studyLinksModal = new bootstrap.Modal(document.getElementById('studyLinksModal'), {
+        backdrop: true,
+        keyboard: true,
+        focus: true
+    });
+    
+    // Handle material type selection
+    document.querySelectorAll('.material-type-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const materialType = this.dataset.type;
+            materialTypeModal.hide();
+            submitAnswer(materialType);
+        });
+    });
+    
+    function submitAnswer(materialType) {
+        const formData = new FormData();
+        formData.append('question_id', currentQuestionId);
+        formData.append('answer', currentAnswer);
+        formData.append('material_type', materialType);
+        
+        fetch('{% url "submit_answer" %}', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.is_correct) {
+                displayStudyLinks(data.study_links);
+            } else {
+                showSuccessMessage();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function displayStudyLinks(studyLinks) {
+        const studyLinksList = document.getElementById('studyLinksList');
+        studyLinksList.innerHTML = studyLinks.map(link => `
+            <a href="${link.url}" class="list-group-item list-group-item-action" target="_blank" rel="noopener noreferrer">
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">${link.title}</h6>
+                    <small class="text-muted">
+                        <span class="badge bg-secondary">${link.source}</span>
+                    </small>
+                </div>
+                <p class="mb-1">${link.description}</p>
+                <small class="text-muted">Type: ${link.material_type}</small>
+            </a>
+        `).join('');
+        
+        studyLinksModal.show();
+    }
+
+    // Handle modal events
+    const modals = [materialTypeModal, studyLinksModal];
+    modals.forEach(modal => {
+        const modalElement = modal._element;
+        
+        modalElement.addEventListener('show.bs.modal', function() {
+            document.body.classList.add('modal-open');
+        });
+
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Remove any remaining backdrop
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+        });
+    });
+
+    // Handle escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            modals.forEach(modal => {
+                if (modal._element.classList.contains('show')) {
+                    modal.hide();
+                }
+            });
+        }
+    });
+});
+</script> 

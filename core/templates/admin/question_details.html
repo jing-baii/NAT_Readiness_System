@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Question Analysis</h2>
+                    <p class="text-muted mb-0">Detailed performance analysis for this question</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'question_stats' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Question Statistics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Question Details -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 fade-in">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">Question Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Question Text</h6>
+                        <p class="mb-0">{{ question.question_text }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Question Type</h6>
+                        <p class="mb-0">{{ question.question_type }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Correct Answer</h6>
+                        <p class="mb-0">{{ question.correct_answer }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Difficulty</h6>
+                        {% if difficulty == 'Pending' %}
+                            <span class="badge bg-secondary" title="Waiting for all students to attempt">
+                                Pending
+                            </span>
+                        {% elif difficulty == 'Very Easy' %}
+                            <span class="badge bg-success">
+                                Very Easy
+                            </span>
+                        {% elif difficulty == 'Moderate' %}
+                            <span class="badge bg-warning">
+                                Moderate
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger">
+                                Very Hard
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-2">Performance Metrics</h6>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <h6 class="text-muted mb-1">Total Attempts</h6>
+                                    <h4 class="mb-0">{{ total_attempts }}</h4>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <h6 class="text-muted mb-1">Success Rate</h6>
+                                    <h4 class="mb-0">{{ success_rate }}%</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Responses -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 fade-in">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">Student Responses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Response</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for response in responses %}
+                                <tr>
+                                    <td>{{ response.student.username }}</td>
+                                    <td>{{ response.answer|truncatechars:50 }}</td>
+                                    <td>
+                                        {% if response.is_correct %}
+                                        <span class="badge bg-success">Correct</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Incorrect</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ response.submitted_at|date:"M d, Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No responses yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %} 

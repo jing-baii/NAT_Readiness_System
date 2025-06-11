@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(45deg, #4e73df, #224abe);">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <h2 class="mb-0">Privacy Policy</h2>
+                    </div>
+                </div>
+                <div class="card-body bg-light">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="policy-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">Information We Collect</h3>
+                                <p class="text-muted">We collect information that you provide directly to us, including:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-user text-info me-2"></i>Account information (name, email, password)</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-id-card text-info me-2"></i>Profile information (avatar, preferences)</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-chart-line text-info me-2"></i>Academic performance data</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-chart-bar text-info me-2"></i>Usage statistics and learning progress</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="policy-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">How We Use Your Information</h3>
+                                <p class="text-muted">We use the collected information to:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-graduation-cap text-info me-2"></i>Provide and improve our educational services</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-user-cog text-info me-2"></i>Personalize your learning experience</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-tasks text-info me-2"></i>Track and analyze your progress</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-comments text-info me-2"></i>Communicate with you about your account</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="policy-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">Data Security</h3>
+                                <p class="text-muted">We implement appropriate security measures to protect your personal information:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-lock text-success me-2"></i>Encryption of sensitive data</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-shield-alt text-success me-2"></i>Regular security assessments</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-key text-success me-2"></i>Access controls and authentication</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-database text-success me-2"></i>Secure data storage and transmission</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="policy-section h-100 p-3 bg-white rounded shadow-sm">
+                                <h3 class="border-bottom pb-2 text-primary">Your Rights</h3>
+                                <p class="text-muted">You have the right to:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-eye text-success me-2"></i>Access your personal information</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-edit text-success me-2"></i>Correct inaccurate data</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-trash-alt text-success me-2"></i>Request deletion of your data</li>
+                                    <li class="list-group-item bg-transparent border-0"><i class="fas fa-ban text-success me-2"></i>Opt-out of communications</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

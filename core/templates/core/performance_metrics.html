@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h1 class="mb-4">Performance Metrics Dashboard</h1>
+
+<!-- Summary/Interpretation Card -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-info-circle text-primary"></i> System Interpretation</h5>
+        <p class="card-text">
+            {% for metric in metrics %}
+                {% if metric.name == 'System Interpretation' %}
+                    {{ metric.notes|linebreaksbr }}
+                {% endif %}
+            {% endfor %}
+        </p>
+    </div>
+</div>
+
+<!-- Key Metrics Cards Grid -->
+<div class="row g-4 mb-4" id="metrics-cards">
+    {% for metric in metrics %}
+        {% if metric.name in 'Relevant Content Engaged (RPS),Adaptive Difficulty Success (ADS),Data-Driven Analytics (AES),Topic Recommendation Accuracy (TRA),Individual Analysis Accuracy (IAA),System Effectiveness Index (SEI)' %}
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card h-100 shadow border-0 metric-card" style="background: var(--card-bg); cursor:pointer;" onclick="showExplanation('{{ forloop.counter0 }}', event)">
+                <div class="card-body card-main-content" id="card-main-{{ forloop.counter0 }}">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="me-3">
+                            <i class="fas fa-chart-bar fa-2x{% if metric.percentage >= 90 %} metric-icon-high{% elif metric.percentage >= 70 %} metric-icon-medium{% else %} metric-icon-low{% endif %}"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-0">{{ metric.name }}</h6>
+                            <span class="badge{% if metric.percentage >= 90 %} metric-badge-high{% elif metric.percentage >= 70 %} metric-badge-medium{% else %} metric-badge-low{% endif %}">
+                                {% if metric.percentage >= 90 %}High{% elif metric.percentage >= 70 %}Medium{% else %}Low{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-end mb-2">
+                        <span class="display-6 fw-bold me-2">{{ metric.percentage|floatformat:2 }}%</span>
+                        <div class="flex-grow-1">
+                            <div class="progress metric-progress-bg" style="height: 8px;">
+                                <div class="progress-bar{% if metric.percentage >= 90 %} metric-bar-high{% elif metric.percentage >= 70 %} metric-bar-medium{% else %} metric-bar-low{% endif %}" role="progressbar" style="width: {{ metric.percentage }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ metric.notes|truncatechars:80 }}</small>
+                </div>
+                <div class="explanation-box" id="explanation-{{ forloop.counter0 }}" style="display:none;">
+                    <div class="card card-body bg-light border-0 position-relative metric-explanation-accent-{{
+                        'high' if metric.percentage >= 90 else 'medium' if metric.percentage >= 70 else 'low' }}">
+                        <button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Close" onclick="closeExplanation('{{ forloop.counter0 }}', event)"></button>
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-2 mb-md-0">
+                                <div class="mb-2">
+                                    <span class="badge bg-primary"><i class="fas fa-chart-bar"></i> {{ metric.name|slice:3 }}</span>
+                                </div>
+                                <div class="metric-detail-section">
+                                    <ul class="nav nav-tabs mb-3" id="metricTab-{{ forloop.counter0 }}" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="formula-tab-{{ forloop.counter0 }}" data-bs-toggle="tab" data-bs-target="#formula-{{ forloop.counter0 }}" type="button" role="tab">Formula</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="dataused-tab-{{ forloop.counter0 }}" data-bs-toggle="tab" data-bs-target="#dataused-{{ forloop.counter0 }}" type="button" role="tab">Data Used</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="source-tab-{{ forloop.counter0 }}" data-bs-toggle="tab" data-bs-target="#source-{{ forloop.counter0 }}" type="button" role="tab">Source</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="reference-tab-{{ forloop.counter0 }}" data-bs-toggle="tab" data-bs-target="#reference-{{ forloop.counter0 }}" type="button" role="tab">Reference</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="calc-tab-{{ forloop.counter0 }}" data-bs-toggle="tab" data-bs-target="#calc-{{ forloop.counter0 }}" type="button" role="tab">Calculation</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content" id="metricTabContent-{{ forloop.counter0 }}">
+                                        <div class="tab-pane fade show active" id="formula-{{ forloop.counter0 }}" role="tabpanel">
+                                            <div class="section-content">
+                                                <code>
+                                                    {% if "rps" in metric.name|lower %}
+                                                        <span data-bs-toggle="tooltip" title="Relevant Content Engaged">RCE</span> /
+                                                        <span data-bs-toggle="tooltip" title="Total Content Recommended">TCR</span> × 100%
+                                                    {% elif "ads" in metric.name|lower or "adaptive difficulty success" in metric.name|lower %}
+                                                        <span data-bs-toggle="tooltip" title="Optimal Difficulty Sessions">ODS</span> /
+                                                        <span data-bs-toggle="tooltip" title="Total Learning Sessions">TLS</span> × 100%
+                                                    {% elif "aes" in metric.name|lower or "data-driven analytics" in metric.name|lower %}
+                                                        (<span data-bs-toggle="tooltip" title="Improvement Rate">IR</span> ×
+                                                        <span data-bs-toggle="tooltip" title="Engagement Rate">ER</span> ×
+                                                        <span data-bs-toggle="tooltip" title="Completion Rate">CR</span>) × 100%
+                                                    {% elif "tra" in metric.name|lower or "topic recommendation accuracy" in metric.name|lower %}
+                                                        <span data-bs-toggle="tooltip" title="Successful Topic Engagements">STE</span> /
+                                                        <span data-bs-toggle="tooltip" title="Total Topic Recommendations">TTR</span> × 100%
+                                                    {% elif "iaa" in metric.name|lower or "individual analysis accuracy" in metric.name|lower %}
+                                                        <span data-bs-toggle="tooltip" title="Correctly Identified Areas">CIA</span> /
+                                                        <span data-bs-toggle="tooltip" title="Total Areas Assessed">TAA</span> × 100%
+                                                    {% elif "sei" in metric.name|lower or "system effectiveness index" in metric.name|lower %}
+                                                        (RPS × 0.3) + (ADS × 0.2) + (AES × 0.2) + (TRA × 0.15) + (IAA × 0.15)
+                                                    {% else %}See notes.{% endif %}
+                                                </code>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="dataused-{{ forloop.counter0 }}" role="tabpanel">
+                                            <div class="section-content">
+                                                <ul class="mb-1">
+                                                    {% if "rps" in metric.name|lower %}
+                                                        <li>RCE (Relevant Content Engaged): <b>{{ metric.numerator }}</b></li>
+                                                        <li>TCR (Total Content Recommended): <b>{{ metric.denominator }}</b></li>
+                                                    {% elif "ads" in metric.name|lower or "adaptive difficulty success" in metric.name|lower %}
+                                                        <li>ODS (Optimal Difficulty Sessions): <b>{{ metric.numerator }}</b></li>
+                                                        <li>TLS (Total Learning Sessions): <b>{{ metric.denominator }}</b></li>
+                                                    {% elif "aes" in metric.name|lower or "data-driven analytics" in metric.name|lower %}
+                                                        <li>Improvement Rate (IR): <b>{{ metric.ir|default:'-' }}</b></li>
+                                                        <li>Engagement Rate (ER): <b>{{ metric.er|default:'-' }}</b></li>
+                                                        <li>Completion Rate (CR): <b>{{ metric.cr|default:'-' }}</b></li>
+                                                    {% elif "tra" in metric.name|lower or "topic recommendation accuracy" in metric.name|lower %}
+                                                        <li>STE (Successful Topic Engagements): <b>{{ metric.numerator }}</b></li>
+                                                        <li>TTR (Total Topic Recommendations): <b>{{ metric.denominator }}</b></li>
+                                                    {% elif "iaa" in metric.name|lower or "individual analysis accuracy" in metric.name|lower %}
+                                                        <li>CIA (Correctly Identified Areas): <b>{{ metric.numerator }}</b></li>
+                                                        <li>TAA (Total Areas Assessed): <b>{{ metric.denominator }}</b></li>
+                                                    {% elif "sei" in metric.name|lower or "system effectiveness index" in metric.name|lower %}
+                                                        <li><b>RPS</b> (Relevant Content Engaged): <b>{{ metric.rps|default:'-' }}</b></li>
+                                                        <li><b>ADS</b> (Adaptive Difficulty Success): <b>{{ metric.ads|default:'-' }}</b></li>
+                                                        <li><b>AES</b> (Data-Driven Analytics): <b>{{ metric.aes|default:'-' }}</b></li>
+                                                        <li><b>TRA</b> (Topic Recommendation Accuracy): <b>{{ metric.tra|default:'-' }}</b></li>
+                                                        <li><b>IAA</b> (Individual Analysis Accuracy): <b>{{ metric.iaa|default:'-' }}</b></li>
+                                                    {% else %}
+                                                        <li>See notes.</li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="source-{{ forloop.counter0 }}" role="tabpanel">
+                                            <div class="section-content">
+                                                <i class="fas fa-database"></i>
+                                                {% if "rps" in metric.name|lower %}User activity logs, recommendation engine
+                                                {% elif "ads" in metric.name|lower or "adaptive difficulty success" in metric.name|lower %}Learning session records, adaptive engine logs
+                                                {% elif "aes" in metric.name|lower or "data-driven analytics" in metric.name|lower %}Assessment results, session logs, engagement tracking
+                                                {% elif "tra" in metric.name|lower or "topic recommendation accuracy" in metric.name|lower %}Topic recommendation and engagement logs
+                                                {% elif "iaa" in metric.name|lower or "individual analysis accuracy" in metric.name|lower %}Diagnostic and progress tracking modules
+                                                {% elif "sei" in metric.name|lower or "system effectiveness index" in metric.name|lower %}Aggregated from all above metrics
+                                                {% else %}See notes.{% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="reference-{{ forloop.counter0 }}" role="tabpanel">
+                                            <div class="section-content">
+                                                {% if "rps" in metric.name|lower %}
+                                                    <a href="https://onlinelibrary.wiley.com/doi/10.1155/2009/421425" target="_blank" rel="noopener noreferrer" class="reference-link" aria-label="A survey of collaborative filtering techniques, Section 3.2 (opens in new tab)" onclick="event.stopPropagation();">
+                                                        <i class="fas fa-external-link-alt"></i> Su, X., & Khoshgoftaar, T. M. (2009). A survey of collaborative filtering techniques. Advances in Artificial Intelligence, 2009, Article ID 421425. Wiley Online Library (See Section 3.2)
+                                                    </a>
+                                                    <div class="reference-summary">This comprehensive survey discusses various collaborative filtering techniques used in recommender systems, which are pivotal in enhancing user engagement by suggesting relevant content. <b>Relevant section: 3.2</b></div>
+                                                    <div class="reference-citation">Su, X., & Khoshgoftaar, T. M. (2009). A survey of collaborative filtering techniques. <i>Advances in Artificial Intelligence</i>, <i>2009</i>, Article 421425. https://doi.org/10.1155/2009/421425</div>
+                                                {% elif "ads" in metric.name|lower or "adaptive difficulty success" in metric.name|lower %}
+                                                    <a href="https://link.springer.com/content/pdf/10.1007/978-3-031-51447-0_1-1#page=10" target="_blank" rel="noopener noreferrer" class="reference-link" aria-label="User models for adaptive hypermedia and adaptive educational systems, page 10 (opens in new tab)" onclick="event.stopPropagation();">
+                                                        <i class="fas fa-external-link-alt"></i> Brusilovsky, P., & Millán, E. (2007). User models for adaptive hypermedia and adaptive educational systems. The Adaptive Web, 3–53. SpringerLink (See page 10)
+                                                    </a>
+                                                    <div class="reference-summary">This article examines the architecture and functioning of adaptive learning systems, focusing on leveraging artificial intelligence to tailor educational experiences to individual learner needs. <b>See page 10 in the PDF.</b></div>
+                                                    <div class="reference-citation">Brusilovsky, P., & Millán, E. (2007). User models for adaptive hypermedia and adaptive educational systems. In P. Brusilovsky, A. Kobsa, & W. Nejdl (Eds.), <i>The adaptive web: Methods and strategies of web personalization</i> (pp. 3–53). Springer. https://link.springer.com/content/pdf/10.1007/978-3-031-51447-0_1-1</div>
+                                                {% elif "aes" in metric.name|lower or "data-driven analytics" in metric.name|lower %}
+                                                    <a href="https://library.educause.edu/resources/2011/12/7-things-you-should-know-about-firstgeneration-learning-analytics" target="_blank" rel="noopener noreferrer" class="reference-link" aria-label="7 things you should know about first-generation learning analytics (opens in new tab)" onclick="event.stopPropagation();">
+                                                        <i class="fas fa-external-link-alt"></i> EDUCAUSE Learning Initiative. (2011). 7 things you should know about first-generation learning analytics. EDUCAUSE Library
+                                                    </a>
+                                                    <div class="reference-summary">This brief provides an overview of learning analytics, discussing how data collection and analysis can inform and improve teaching and learning processes. <b>See section: 'What is Learning Analytics?'</b></div>
+                                                    <div class="reference-citation">EDUCAUSE Learning Initiative. (2011). <i>7 things you should know about first-generation learning analytics</i>. EDUCAUSE. https://library.educause.edu/resources/2011/12/7-things-you-should-know-about-firstgeneration-learning-analytics</div>
+                                                {% elif "tra" in metric.name|lower or "topic recommendation accuracy" in metric.name|lower %}
+                                                    <a href="https://dl.acm.org/doi/10.1145/2911451.2911499" target="_blank" rel="noopener noreferrer" class="reference-link" aria-label="Topic modeling for short texts with auxiliary word embeddings, Section 4.1 (opens in new tab)" onclick="event.stopPropagation();">
+                                                        <i class="fas fa-external-link-alt"></i> Yan, R., Lapata, M., & Li, X. (2015). Topic modeling for short texts with auxiliary word embeddings. NAACL HLT 2015. ACM Digital Library (See Section 4.1)
+                                                    </a>
+                                                    <div class="reference-summary">This paper proposes a topic modeling approach for short texts, enhancing topic recommendation accuracy by incorporating auxiliary word embeddings. <b>Relevant section: 4.1</b></div>
+                                                    <div class="reference-citation">Yan, R., Lapata, M., & Li, X. (2015). Topic modeling for short texts with auxiliary word embeddings. In <i>Proceedings of the 2015 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies</i> (pp. 252–257). Association for Computational Linguistics. https://doi.org/10.1145/2911451.2911499</div>
+                                                {% elif "iaa" in metric.name|lower or "individual analysis accuracy" in metric.name|lower %}
+                                                    <a href="https://www.edutopia.org/assessment-guide-importance" target="_blank" rel="noopener noreferrer" class="reference-link" aria-label="Why is assessment important? (opens in new tab)" onclick="event.stopPropagation();">
+                                                        <i class="fas fa-external-link-alt"></i> Edutopia. (2008). Why is assessment important? Edutopia
+                                                    </a>
+                                                    <div class="reference-summary">This article discusses the significance of assessments in education, emphasizing how they help in understanding individual student learning and guiding instructional decisions. <b>See section: 'Why is Assessment Important?'</b></div>
+                                                    <div class="reference-citation">Edutopia. (2008, July 15). Why is assessment important? <i>Edutopia</i>. https://www.edutopia.org/assessment-guide-importance</div>
+                                                {% elif "sei" in metric.name|lower or "system effectiveness index" in metric.name|lower %}
+                                                    <a href="https://er.educause.edu/articles/2018/9/a-rubric-for-evaluating-e-learning-tools-in-higher-education" target="_blank" rel="noopener noreferrer" class="reference-link" aria-label="A rubric for evaluating e-learning tools in higher education (opens in new tab)" onclick="event.stopPropagation();">
+                                                        <i class="fas fa-external-link-alt"></i> Anstey, L., & Watson, G. (2018). A rubric for evaluating e-learning tools in higher education. EDUCAUSE Review
+                                                    </a>
+                                                    <div class="reference-summary">This article presents a rubric for evaluating e-learning tools, providing a framework for assessing the effectiveness of educational technology in higher education. <b>See Table 1.</b></div>
+                                                    <div class="reference-citation">Anstey, L., & Watson, G. (2018). A rubric for evaluating e-learning tools in higher education. <i>EDUCAUSE Review</i>. https://er.educause.edu/articles/2018/9/a-rubric-for-evaluating-e-learning-tools-in-higher-education</div>
+                                                {% else %}See notes.{% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="calc-{{ forloop.counter0 }}" role="tabpanel">
+                                            <div class="section-content">
+                                                {% if "rps" in metric.name|lower %}
+                                                    <code>RPS = ({{ metric.numerator }} / {{ metric.denominator }}) × 100% = {{ metric.percentage|floatformat:2 }}%</code>
+                                                {% elif "ads" in metric.name|lower or "adaptive difficulty success" in metric.name|lower %}
+                                                    <code>ADS = ({{ metric.numerator }} / {{ metric.denominator }}) × 100% = {{ metric.percentage|floatformat:2 }}%</code>
+                                                {% elif "aes" in metric.name|lower or "data-driven analytics" in metric.name|lower %}
+                                                    <code>AES = (IR × ER × CR) × 100% = ({{ metric.ir|default:'-'}} × {{ metric.er|default:'-'}} × {{ metric.cr|default:'-' }}) × 100% = {{ metric.percentage|floatformat:2 }}%</code>
+                                                {% elif "tra" in metric.name|lower or "topic recommendation accuracy" in metric.name|lower %}
+                                                    <code>TRA = ({{ metric.numerator }} / {{ metric.denominator }}) × 100% = {{ metric.percentage|floatformat:2 }}%</code>
+                                                {% elif "iaa" in metric.name|lower or "individual analysis accuracy" in metric.name|lower %}
+                                                    <code>IAA = ({{ metric.numerator }} / {{ metric.denominator }}) × 100% = {{ metric.percentage|floatformat:2 }}%</code>
+                                                {% elif "sei" in metric.name|lower or "system effectiveness index" in metric.name|lower %}
+                                                    <code>SEI = ({{ metric.rps|default:'-'}} × 0.3) + ({{ metric.ads|default:'-'}} × 0.2) + ({{ metric.aes|default:'-'}} × 0.2) + ({{ metric.tra|default:'-'}} × 0.15) + ({{ metric.iaa|default:'-'}} × 0.15) = {{ metric.percentage|floatformat:2 }}%</code>
+                                                {% else %}
+                                                    <code>See notes.</code>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <canvas id="trendChart-{{ forloop.counter0 }}" height="60"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 border-start ps-3">
+                                <div class="mt-3">
+                                    <span class="badge {% if metric.percentage >= 90 %}bg-success{% elif metric.percentage >= 70 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {% if metric.percentage >= 90 %}High{% elif metric.percentage >= 70 %}Medium{% else %}Low{% endif %}
+                                    </span>
+                                    <b>Result:</b> {{ metric.percentage|floatformat:2 }}%
+                                </div>
+                                <div class="mt-2 text-muted">{{ metric.notes|linebreaksbr }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function showExplanation(idx, event) {
+    event.stopPropagation();
+    // Hide all explanations and show all main contents
+    document.querySelectorAll('.explanation-box').forEach(function(box) {
+        box.style.display = 'none';
+    });
+    document.querySelectorAll('.card-main-content').forEach(function(main) {
+        main.style.display = 'block';
+    });
+    // Show explanation, hide main content for this card
+    document.getElementById('explanation-' + idx).style.display = 'block';
+    document.getElementById('card-main-' + idx).style.display = 'none';
+}
+function closeExplanation(idx, event) {
+    event.stopPropagation();
+    document.getElementById('explanation-' + idx).style.display = 'none';
+    document.getElementById('card-main-' + idx).style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    {% for metric in metrics %}
+    var ctx{{ forloop.counter0 }} = document.getElementById('trendChart-{{ forloop.counter0 }}');
+    if (ctx{{ forloop.counter0 }}) {
+        new Chart(ctx{{ forloop.counter0 }}, {
+            type: 'line',
+            data: {
+                labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'],
+                datasets: [{
+                    label: '{{ metric.name }}',
+                    data: {{ metric.trend|default:'[80,82,85,90,93,95]' }},
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 0, max: 100, ticks: { stepSize: 20 } } },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+    {% endfor %}
+});
+</script>
+
+<!-- Detailed Metrics Table -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3"><i class="fas fa-table"></i> Detailed Metrics</h5>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Numerator</th>
+                        <th>Denominator</th>
+                        <th>Value</th>
+                        <th>Percentage</th>
+                        <th>Notes</th>
+                        <th>Explanation</th>
+                        <th>Created At</th>
+                        <th>Updated At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for metric in metrics %}
+                    <tr>
+                        <td>{{ metric.name }}</td>
+                        <td>{{ metric.numerator }}</td>
+                        <td>{{ metric.denominator }}</td>
+                        <td>{{ metric.value }}</td>
+                        <td>{{ metric.percentage }}%</td>
+                        <td>{{ metric.notes|linebreaksbr }}</td>
+                        <td>
+                            {% if "rps" in metric.name|lower %}
+                                Calculated from the number of content items users engaged with (LinkAccess) divided by the total recommended (StudyLink). Data comes from user activity logs.
+                            {% elif "ads" in metric.name|lower or "adaptive difficulty success" in metric.name|lower %}
+                                Calculated as the number of optimal/complete learning sessions (QuizProgress with is_completed=True) divided by total sessions. Data comes from learning session records.
+                            {% elif "aes" in metric.name|lower or "data-driven analytics" in metric.name|lower %}
+                                Calculated using improvement rate, engagement rate, and completion rate from StudentResponse and QuizProgress. Data comes from user scores, time spent, and session completion.
+                            {% elif "tra" in metric.name|lower or "topic recommendation accuracy" in metric.name|lower %}
+                                Calculated as the number of unique topics engaged (distinct LinkAccess.study_link) divided by total topics recommended (StudyLink). Data comes from topic recommendation and engagement logs.
+                            {% elif "iaa" in metric.name|lower or "individual analysis accuracy" in metric.name|lower %}
+                                Calculated as correctly identified areas divided by total areas assessed. Data comes from diagnostic and progress tracking modules.
+                            {% elif "Interpretation" in metric.name %}
+                                This is a summary interpretation generated from the above metrics.
+                            {% else %}
+                                Calculated as numerator divided by denominator. Data comes from the relevant user activity or system logs for this metric.
+                            {% endif %}
+                        </td>
+                        <td>{{ metric.created_at }}</td>
+                        <td>{{ metric.updated_at }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9">No metrics available.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- FontAwesome for icons (if not already included) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.card-title i { margin-right: 0.5em; }
+.display-6 { font-size: 2.5rem; }
+.badge { font-size: 1em; }
+.metric-card { transition: box-shadow 0.2s; }
+.metric-card:hover { box-shadow: 0 0 0 4px var(--primary-color, #2563eb); }
+.explanation-box { animation: fadeIn 0.3s; pointer-events: auto !important; position: relative; z-index: 10; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.metric-icon-high, .metric-badge-high, .metric-bar-high { background: var(--success-color); color: #fff !important; }
+.metric-icon-medium, .metric-badge-medium, .metric-bar-medium { background: var(--warning-color); color: #fff !important; }
+.metric-icon-low, .metric-badge-low, .metric-bar-low { background: var(--danger-color); color: #fff !important; }
+.metric-icon-high { color: var(--success-color) !important; background: none !important; }
+.metric-icon-medium { color: var(--warning-color) !important; background: none !important; }
+.metric-icon-low { color: var(--danger-color) !important; background: none !important; }
+.metric-progress-bg { background: var(--border-color, #e5e7eb); }
+.metric-explanation-accent-high { border-left: 5px solid var(--success-color); }
+.metric-explanation-accent-medium { border-left: 5px solid var(--warning-color); }
+.metric-explanation-accent-low { border-left: 5px solid var(--danger-color); }
+.reference-link {
+    color: var(--primary-color, #2563eb);
+    text-decoration: underline;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+}
+.reference-link:focus {
+    outline: 2px solid var(--primary-color, #2563eb);
+    outline-offset: 2px;
+}
+.reference-link i { font-size: 1em; }
+.metric-card .explanation-box a { pointer-events: auto !important; z-index: 20; position: relative; }
+.reference-summary {
+    font-size: 0.95em;
+    color: #444;
+    margin-top: 0.3em;
+    margin-bottom: 0.5em;
+}
+.reference-citation {
+    font-size: 1.18em;
+    color: #222;
+    margin-top: 0.7em;
+    font-style: italic;
+    word-break: break-all;
+    font-weight: 600;
+    line-height: 1.6;
+    background: #f5f7fa;
+    border-left: 4px solid var(--primary-color, #2563eb);
+    border-radius: 0.4em;
+    padding: 0.7em 1em;
+    display: block;
+}
+.section-title {
+    font-size: 1.08em;
+    font-weight: 600;
+    color: #2563eb;
+    margin-bottom: 0.3em;
+    margin-top: 0.7em;
+}
+.section-content {
+    margin-bottom: 0.5em;
+}
+.metric-detail-section hr {
+    border-top: 1px solid #e5e7eb;
+    margin: 0.5em 0;
+}
+</style>
+
+<!-- Bootstrap JS for tabs -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %} 

@@ -1,0 +1,489 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Manual Question Form Modal -->
+<div class="modal fade" id="manualQuestionModal" tabindex="-1" aria-labelledby="manualQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="manualQuestionModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Add Manual Question
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="manualQuestionForm">
+                    <input type="hidden" id="manualSubtopicId" name="subtopic_id">
+                    <input type="hidden" id="manualLevel" name="level">
+                    <input type="hidden" id="manualStudentId" name="student_id">
+                    
+                    <!-- Two-column grid for top fields -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="schoolYear" class="form-label">School Year</label>
+                            <select class="form-select" id="schoolYear" name="school_year">
+                                <option value="">----------</option>
+                                <!-- Populate dynamically if needed -->
+                            </select>
+                            <button type="button" class="btn btn-link text-primary p-0 mt-1 ms-1" id="addSchoolYearBtn">
+                                <i class="fas fa-plus-circle"></i> Add New School Year
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subject" class="form-label">Subject</label>
+                            <select class="form-select" id="subject" name="subject">
+                                <option value="">Select a subject</option>
+                                <!-- Populate dynamically if needed -->
+                            </select>
+                            <button type="button" class="btn btn-link text-primary p-0 mt-1 ms-1" id="addSubjectBtn">
+                                <i class="fas fa-plus-circle"></i> Add New Subject
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="generalTopic" class="form-label">General Topic</label>
+                            <select class="form-select" id="generalTopic" name="general_topic">
+                                <option value="">Select a general topic</option>
+                                <!-- Populate dynamically if needed -->
+                            </select>
+                            <button type="button" class="btn btn-link text-primary p-0 mt-1 ms-1" id="addGeneralTopicBtn">
+                                <i class="fas fa-plus-circle"></i> Add New General Topic
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subtopic" class="form-label">Subtopic</label>
+                            <select class="form-select" id="subtopic" name="subtopic">
+                                <option value="">Select a subtopic</option>
+                                <!-- Populate dynamically if needed -->
+                            </select>
+                            <button type="button" class="btn btn-link text-primary p-0 mt-1 ms-1" id="addSubtopicBtn">
+                                <i class="fas fa-plus-circle"></i> Add New Subtopic
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="points" class="form-label">Points</label>
+                            <input type="number" class="form-control" id="points" name="points" value="1" min="1">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="questionType" class="form-label">Question Type</label>
+                            <select class="form-select" id="questionType" name="question_type" required>
+                                <option value="">Select question type</option>
+                                <option value="multiple_choice">Multiple Choice</option>
+                                <option value="true_false">True/False</option>
+                                <option value="essay">Essay</option>
+                                <option value="file_upload">File Upload</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="questionLevel" class="form-label">Question Level</label>
+                            <input type="number" class="form-control" id="questionLevel" name="question_level" value="1" min="1">
+                            <small class="text-muted">Specify the level this question belongs to (Level 1 is the starting level)</small>
+                        </div>
+                    </div>
+
+                    <!-- Question Text -->
+                    <div class="mb-3">
+                        <label for="questionText" class="form-label">Question Text</label>
+                        <textarea class="form-control" id="questionText" name="question_text" rows="3" required></textarea>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" class="btn btn-outline-primary" id="suggestTopicsBtn">
+                                <i class="fas fa-lightbulb me-2"></i>Suggest Topics
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Section as Card -->
+                    <div id="fileUploadFields" style="display: none;" class="border rounded p-4 bg-light-subtle mb-4">
+                        <h5 class="mb-4 text-primary">
+                            <i class="fas fa-file-upload me-2"></i>File Upload Settings
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="maxFileSize" class="form-label">Maximum File Size (MB)</label>
+                                <input type="number" class="form-control" id="maxFileSize" name="max_file_size" min="1" max="10" value="5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="allowedFileTypes" class="form-label">Allowed File Types</label>
+                                <input type="text" class="form-control" id="allowedFileTypes" name="allowed_file_types" value="pdf,doc,docx,txt,jpg,jpeg,png,gif">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Upload Question File</label>
+                                <input type="file" class="form-control" id="questionFile" name="question_file" accept=".txt,.doc,.docx,.pdf,.jpg,.jpeg,.png,.gif">
+                                <small class="form-text text-muted">Supported formats: .txt, .doc, .docx, .pdf</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary" id="extractQuestionBtn">
+                            <i class="fas fa-file-upload me-2"></i>Extract Question
+                        </button>
+                        <button type="button" class="btn btn-primary" id="addToPendingBtn">
+                            <i class="fas fa-plus me-2"></i>Add to Pending
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info d-none" id="extractQuestionBtn">
+                    <i class="fas fa-file-upload me-2"></i>Extract Question
+                </button>
+                <button type="button" class="btn btn-primary" id="saveManualQuestionBtn">
+                    <i class="fas fa-save me-2"></i>Save Question
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal positioning for centered display */
+#manualQuestionModal {
+    z-index: 1056 !important;
+}
+
+#manualQuestionModal .modal-dialog {
+    position: fixed !important;
+    margin: 0 !important;
+    transform: translate(-50%, -50%) !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 700px !important;
+    max-width: 95vw !important;
+}
+
+#manualQuestionModal .modal-content {
+    height: auto !important;
+    min-height: 200px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
+
+#manualQuestionModal .modal-body {
+    height: auto !important;
+    overflow-y: auto !important;
+    padding: 1.5rem !important;
+}
+
+/* Ensure proper stacking of modals */
+.modal-backdrop {
+    z-index: 1055 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    #manualQuestionModal .modal-dialog {
+        width: 98vw !important;
+        min-width: unset !important;
+    }
+}
+
+/* Form styles */
+.form-label {
+    font-weight: 500;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+}
+
+.option-input:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Toast container */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+}
+
+/* Dynamic content styles */
+#multipleChoiceFields,
+#trueFalseFields,
+#fileUploadFields {
+    transition: all 0.3s ease-in-out;
+}
+
+.list-group-item {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Ensure form elements are responsive */
+.form-control,
+.form-select,
+.input-group {
+    width: 100% !important;
+}
+
+/* Ensure proper spacing for dynamic content */
+.mb-3:last-child {
+    margin-bottom: 0 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const questionTypeSelect = document.getElementById('questionType');
+    const multipleChoiceFields = document.getElementById('multipleChoiceFields');
+    const trueFalseFields = document.getElementById('trueFalseFields');
+    const fileUploadFields = document.getElementById('fileUploadFields');
+    const choiceInput = document.getElementById('choiceInput');
+    const addChoiceBtn = document.getElementById('addChoiceBtn');
+    const choicesList = document.getElementById('choicesList');
+    const correctChoiceSelect = document.getElementById('correctChoice');
+    const saveManualQuestionBtn = document.getElementById('saveManualQuestionBtn');
+    const manualQuestionForm = document.getElementById('manualQuestionForm');
+    const questionFileInput = document.getElementById('questionFile');
+    const extractQuestionBtn = document.getElementById('extractQuestionBtn');
+    let choices = [];
+
+    // Function to toggle sections based on question type
+    function toggleSections() {
+        const selectedType = questionTypeSelect.value;
+        [multipleChoiceFields, trueFalseFields, fileUploadFields].forEach(section => {
+            if (section) section.style.display = 'none';
+        });
+        switch(selectedType) {
+            case 'multiple_choice':
+                if (multipleChoiceFields) multipleChoiceFields.style.display = 'block';
+                break;
+            case 'true_false':
+                if (trueFalseFields) trueFalseFields.style.display = 'block';
+                break;
+            case 'file_upload':
+                if (fileUploadFields) fileUploadFields.style.display = 'block';
+                break;
+        }
+    }
+
+    // Function to add a new choice
+    function addChoice() {
+        const choiceText = choiceInput.value.trim();
+        if (!choiceText) {
+            alert('Please enter a choice text');
+            return;
+        }
+        if (choices.length >= 6) {
+            alert('Maximum number of choices reached (6)');
+            return;
+        }
+        const label = String.fromCharCode(65 + choices.length);
+        const choiceItem = document.createElement('div');
+        choiceItem.className = 'list-group-item';
+        choiceItem.innerHTML = `
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="correct_choice" value="${choices.length}" id="choice${choices.length}">
+                <label class="form-check-label" for="choice${choices.length}">
+                    <span class="badge bg-primary me-2">${label}</span>${choiceText}
+                </label>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-choice">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        choicesList.appendChild(choiceItem);
+        choices.push(choiceText);
+        choiceInput.value = '';
+        updateCorrectChoiceSelect();
+    }
+
+    // Function to update correct choice select
+    function updateCorrectChoiceSelect() {
+        if (!correctChoiceSelect) return;
+        correctChoiceSelect.innerHTML = '<option value="">Select correct choice</option>';
+        choices.forEach((choice, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = choice;
+            correctChoiceSelect.appendChild(option);
+        });
+    }
+
+    // Add event listener for add choice button
+    if (addChoiceBtn) {
+        addChoiceBtn.addEventListener('click', addChoice);
+    }
+
+    // Add event listener for enter key in choice input
+    if (choiceInput) {
+        choiceInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addChoice();
+            }
+        });
+    }
+
+    // Initialize sections on page load
+    toggleSections();
+
+    // Add event listener for question type change
+    if (questionTypeSelect) {
+        questionTypeSelect.addEventListener('change', toggleSections);
+    }
+
+    // Handle form submission
+    if (manualQuestionForm) {
+        manualQuestionForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(manualQuestionForm);
+            const data = {
+                subtopic_id: formData.get('subtopic_id'),
+                level: formData.get('level'),
+                student_id: formData.get('student_id'),
+                question_text: formData.get('question_text'),
+                question_type: formData.get('question_type'),
+                difficulty: formData.get('difficulty'),
+                options: choices,
+                correct_answer: formData.get('correct_choice'),
+                explanation: formData.get('explanation', '')
+            };
+
+            try {
+                const response = await fetch('/api/add-manual-question/', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+
+                const result = await response.json();
+                if (result.message) {
+                    alert(result.message);
+                    manualQuestionForm.reset();
+                } else {
+                    alert(result.error || 'An error occurred while saving the question.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while saving the question.');
+            }
+        });
+    }
+
+    // Show/hide file upload fields and extract button based on question type
+    questionTypeSelect.addEventListener('change', function() {
+        if (this.value === 'file_upload') {
+            fileUploadFields.style.display = 'block';
+            updateExtractButtonVisibility();
+        } else {
+            fileUploadFields.style.display = 'none';
+            extractQuestionBtn.style.display = 'none';
+        }
+    });
+
+    // Update extract button visibility when file is selected
+    questionFileInput.addEventListener('change', function() {
+        updateExtractButtonVisibility();
+    });
+
+    function updateExtractButtonVisibility() {
+        if (questionTypeSelect.value === 'file_upload' && questionFileInput.files.length > 0) {
+            extractQuestionBtn.style.display = 'inline-block';
+        } else {
+            extractQuestionBtn.style.display = 'none';
+        }
+    }
+
+    // Function to fill fields based on selected subtopic
+    function fillFieldsBasedOnSubtopic(subtopicId) {
+        fetch(`/api/get-subtopic-data/${subtopicId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('schoolYear').value = data.school_year;
+                document.getElementById('subject').value = data.subject;
+                document.getElementById('generalTopic').value = data.general_topic;
+                document.getElementById('questionType').value = data.question_type;
+                document.getElementById('questionLevel').value = data.level;
+            })
+            .catch(error => {
+                console.error('Error fetching subtopic data:', error);
+            });
+    }
+
+    // Add event listener for subtopic selection
+    const subtopicSelect = document.getElementById('subtopic');
+    if (subtopicSelect) {
+        subtopicSelect.addEventListener('change', function() {
+            const subtopicId = this.value;
+            if (subtopicId) {
+                fillFieldsBasedOnSubtopic(subtopicId);
+            }
+        });
+    }
+
+    // Handle manual question button click
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.manual-question-btn')) {
+            const button = e.target.closest('.manual-question-btn');
+            const subtopicId = button.dataset.subtopicId;
+            const subtopicName = button.dataset.subtopicName;
+            const level = button.dataset.level;
+            const studentId = button.dataset.studentId;
+
+            console.log('[Manual Add] Clicked for subtopicId:', subtopicId, 'level:', level, 'studentId:', studentId);
+
+            // Close the question count modal
+            const questionCountModal = bootstrap.Modal.getInstance(document.getElementById('questionCountModal'));
+            if (questionCountModal) {
+                questionCountModal.hide();
+            }
+
+            // Set the values in the form
+            document.getElementById('manualSubtopicId').value = subtopicId;
+            document.getElementById('manualLevel').value = level;
+            document.getElementById('manualStudentId').value = studentId;
+
+            // Fetch and fill all related fields based on subtopic
+            fetch(`/api/get-subtopic-data/${subtopicId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('[Manual Add] Data received from backend:', data);
+                    let filled = true;
+                    if (data.school_year !== undefined) {
+                        document.getElementById('schoolYear').value = data.school_year;
+                        console.log('[Manual Add] Set schoolYear:', data.school_year);
+                    } else { filled = false; }
+                    if (data.subject !== undefined) {
+                        document.getElementById('subject').value = data.subject;
+                        console.log('[Manual Add] Set subject:', data.subject);
+                    } else { filled = false; }
+                    if (data.general_topic !== undefined) {
+                        document.getElementById('generalTopic').value = data.general_topic;
+                        console.log('[Manual Add] Set generalTopic:', data.general_topic);
+                    } else { filled = false; }
+                    if (data.level !== undefined) {
+                        document.getElementById('questionLevel').value = data.level;
+                        console.log('[Manual Add] Set questionLevel:', data.level);
+                    } else { filled = false; }
+                    // If you want to set question_type, add here
+
+                    // Update modal title with subtopic name
+                    document.getElementById('manualQuestionModalLabel').innerHTML = `
+                        <i class="fas fa-plus-circle me-2"></i>Add Question for ${subtopicName}
+                    `;
+
+                    if (filled) {
+                        // Show the manual question modal only after fields are set
+                        const manualQuestionModal = new bootstrap.Modal(document.getElementById('manualQuestionModal'));
+                        manualQuestionModal.show();
+                    } else {
+                        alert('Some fields could not be auto-filled. Please check the subtopic data.');
+                    }
+                })
+                .catch(error => {
+                    console.error('[Manual Add] Error fetching subtopic data:', error);
+                    alert('Failed to fetch subtopic data. Please try again.');
+                });
+        }
+    });
+});
+</script>
+{% endblock %} 

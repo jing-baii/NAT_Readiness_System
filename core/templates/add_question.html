@@ -1,0 +1,2972 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span id="toastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add New Question Container -->
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-gradient text-white border-0">
+                    <h3 class="mb-0">
+                        <i class="fas {% if is_edit %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>
+                        {% if is_edit %}Edit Question{% else %}Add New Question{% endif %}
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="questionForm" action="{% if is_edit %}{% url 'edit_question' question.id %}{% else %}{% url 'add_question' %}{% endif %}">
+                {% csrf_token %}
+                        <!-- Basic Question Fields -->
+                        <div id="basicFields" class="mb-4">
+                            <div class="row g-3">
+                                <!-- School Year Selection -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        {{ form.school_year }}
+                                        <label for="{{ form.school_year.id_for_label }}">School Year</label>
+                                    </div>
+                                    <button type="button" class="btn btn-link text-primary p-0 mt-1" data-bs-toggle="modal" data-bs-target="#addSchoolYearModal">
+                                        <i class="fas fa-plus-circle"></i> Add New School Year
+                                    </button>
+                                </div>
+                                <!-- Subject Selection -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="subject" name="subject" required>
+                                            <option value="">Select a subject</option>
+                                            {% for subject in subjects %}
+                                            <option value="{{ subject.id }}" {% if is_edit and subject.id == initial_subject.id %}selected{% endif %}>
+                                                {{ subject.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <label for="subject">Subject</label>
+                                    </div>
+                                    <button type="button" class="btn btn-link text-primary p-0 mt-1" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                                        <i class="fas fa-plus-circle"></i> Add New Subject
+                                    </button>
+                                </div>
+
+                                <!-- General Topic Selection -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="general_topic" name="general_topic" required>
+                                            <option value="">Select a general topic</option>
+                                            {% if is_edit and initial_general_topic %}
+                                            <option value="{{ initial_general_topic.id }}" selected>
+                                                {{ initial_general_topic.name }}
+                                            </option>
+                                            {% endif %}
+                                        </select>
+                                        <label for="general_topic">General Topic</label>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-1">
+                                        <button type="button" class="btn btn-link text-primary p-0" data-bs-toggle="modal" data-bs-target="#addGeneralTopicModal">
+                                        <i class="fas fa-plus-circle"></i> Add New General Topic
+                                    </button>
+                                        <button type="button" class="btn btn-success btn-sm" id="saveSuggestedGeneralTopicBtn" style="display: none;">
+                                            <i class="fas fa-save"></i> Save Suggested Topic
+                                    </button>
+                                    </div>
+                                </div>
+
+                                <!-- Subtopic Selection -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="subtopic" name="subtopic" required>
+                                            <option value="">Select a subtopic</option>
+                                            {% if is_edit and initial_subtopic %}
+                                            <option value="{{ initial_subtopic.id }}" selected>
+                                                {{ initial_subtopic.name }}
+                                            </option>
+                                            {% endif %}
+                                        </select>
+                                        <label for="subtopic">Subtopic</label>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-1">
+                                        <button type="button" class="btn btn-link text-primary p-0" data-bs-toggle="modal" data-bs-target="#addSubtopicModal">
+                                        <i class="fas fa-plus-circle"></i> Add New Subtopic
+                                    </button>
+                                        <button type="button" class="btn btn-success btn-sm" id="saveSuggestedSubtopicBtn" style="display: none;">
+                                            <i class="fas fa-save"></i> Save Suggested Subtopic
+                                    </button>
+                                    </div>
+                                </div>
+
+                                <!-- Points -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        {{ form.points }}
+                                        <label for="{{ form.points.id_for_label }}">Points</label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Question Type -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        {{ form.question_type }}
+                                        <label for="{{ form.question_type.id_for_label }}">Question Type</label>
+                                    </div>
+                                </div>
+
+                                <!-- Question Level -->
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        {{ form.level }}
+                                        <label for="{{ form.level.id_for_label }}">Question Level</label>
+                                        <small class="text-muted">Specify the level this question belongs to (Level 1 is the starting level)</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Question Text -->
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        {{ form.question_text }}
+                                        <label for="{{ form.question_text.id_for_label }}">Question Text</label>
+                                    </div>
+                                    <div class="d-flex justify-content-end mt-2">
+                                        <button type="button" class="btn btn-outline-primary" id="suggestTopicsBtn">
+                                            <i class="fas fa-lightbulb me-2"></i>Suggest Topics
+                                        </button>
+                                        <button type="button" class="btn btn-success btn-sm ms-2" id="saveSuggestedGeneralTopicBtn" style="display: none;">
+                                            <i class="fas fa-save me-2"></i>Save Topic
+                                        </button>
+                                        <button type="button" class="btn btn-success btn-sm ms-2" id="saveSuggestedSubtopicBtn" style="display: none;">
+                                            <i class="fas fa-save me-2"></i>Save Subtopic
+                                        </button>
+                                        <div id="generatedAnswerLabel" class="ms-3 align-self-center" style="display: none;">
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                <span id="generatedAnswerText"></span>
+                                            </span>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <!-- Multiple Choice Fields -->
+                        <div id="multipleChoiceFields" style="display: none;" class="border rounded p-4 bg-light-subtle mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-list-ul me-2"></i>Multiple Choice Options
+                                </h5>
+                                <span class="badge bg-info">Maximum 6 choices</span>
+                            </div>
+                            
+                            <!-- Add Choice Input -->
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-white">
+                                    <i class="fas fa-plus text-primary"></i>
+                                </span>
+                                    <input type="text" id="choiceInput" class="form-control" placeholder="Enter a choice">
+                                    <button type="button" class="btn btn-primary" id="addChoiceBtn">
+                                    <i class="fas fa-plus me-2"></i>Add Choice
+                                    </button>
+                            </div>
+
+                            <!-- Display Choices -->
+                            <div id="choicesList" class="list-group mb-4"></div>
+                            
+                            <!-- Correct Choice Selection -->
+                            <div class="form-floating">
+                                {{ form.correct_choice }}
+                                <label for="{{ form.correct_choice.id_for_label }}">Select Correct Choice</label>
+                            </div>
+                                {% if form.correct_choice.errors %}
+                                    <div class="alert alert-danger mt-2">
+                                        {{ form.correct_choice.errors }}
+                                    </div>
+                                {% endif %}
+                        </div>
+
+                        <!-- True/False Fields -->
+                        <div id="trueFalseFields" style="display: none;" class="border rounded p-4 bg-light-subtle mb-4">
+                            <h5 class="mb-4 text-primary">
+                                <i class="fas fa-toggle-on me-2"></i>True/False Options
+                            </h5>
+                            <div class="form-floating">
+                                {{ form.true_false_answer }}
+                                <label for="{{ form.true_false_answer.id_for_label }}">Correct Answer</label>
+                            </div>
+                        </div>
+
+                        <!-- File Upload Fields -->
+                        <div id="fileUploadFields" style="display: none;" class="border rounded p-4 bg-light-subtle mb-4">
+                            <h5 class="mb-4 text-primary">
+                                <i class="fas fa-file-upload me-2"></i>File Upload Settings
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                    {{ form.max_file_size }}
+                                        <label for="{{ form.max_file_size.id_for_label }}">Maximum File Size (MB)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                    {{ form.allowed_file_types }}
+                                        <label for="{{ form.allowed_file_types.id_for_label }}">Allowed File Types</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Upload Question File</label>
+                                    <input type="file" class="form-control" id="questionFile" name="question_file" accept=".txt,.doc,.docx,.pdf" style="z-index:2;position:relative;">
+                                    <small class="form-text text-muted">Supported formats: .txt, .doc, .docx, .pdf</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" id="extractQuestionBtn" style="display: none;">
+                                <i class="fas fa-file-upload me-2"></i>Extract Question
+                            </button>
+                            <button type="button" class="btn btn-primary" id="addToPendingBtn">
+                                <i class="fas fa-plus me-2"></i>Add to Pending
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extracted Questions Container -->
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-gradient text-white border-0">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Extracted Questions
+                    </h3>
+                </div>
+                <div class="card-body p-4 d-flex flex-column" style="height: 100%;">
+                    <div class="extracted-questions-container d-flex flex-column flex-grow-1" style="height: 100%; min-height: 300px;">
+                        <!-- Multiple Choice Questions -->
+                        <div class="question-type-section mb-4 flex-grow-1 d-flex flex-column" style="min-height:0;">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-list-ul me-2"></i>Multiple Choice Questions
+                            </h5>
+                            <div id="extractedMultipleChoice" class="list-group flex-grow-1" style="min-height:0;"></div>
+                        </div>
+
+                        <!-- True/False Questions -->
+                        <div class="question-type-section mb-4 flex-grow-1 d-flex flex-column" style="min-height:0;">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-toggle-on me-2"></i>True/False Questions
+                            </h5>
+                            <div id="extractedTrueFalse" class="list-group flex-grow-1" style="min-height:0;"></div>
+                        </div>
+
+                        <!-- Short Answer Questions -->
+                        <div class="question-type-section mb-4 flex-grow-1 d-flex flex-column" style="min-height:0;">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-align-left me-2"></i>Short Answer Questions
+                            </h5>
+                            <div id="extractedShortAnswer" class="list-group flex-grow-1" style="min-height:0;"></div>
+                        </div>
+
+                        <!-- Essay Questions -->
+                        <div class="question-type-section flex-grow-1 d-flex flex-column" style="min-height:0;">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-file-alt me-2"></i>Essay Questions
+                            </h5>
+                            <div id="extractedEssay" class="list-group flex-grow-1" style="min-height:0;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recently Added Questions by Subject -->
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-gradient text-white border-0 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-list me-2"></i>Recently Added Questions by Subject</h4>
+                    <span id="pendingQuestionsLabel" class="badge bg-success fs-6" style="display: none;"></span>
+                </div>
+                <div class="card-body p-4" id="recentlyAddedQuestionsContainer" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Will be dynamically rendered by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+                </div>
+                
+<!-- Add Subject Modal -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSubjectModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Subject
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSubjectForm">
+                    {% csrf_token %}
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="subjectName" name="name" required>
+                        <label for="subjectName">Subject Name</label>
+                    </div>
+                    <div class="form-floating">
+                        <textarea class="form-control" id="subjectDescription" name="description" style="height: 100px"></textarea>
+                        <label for="subjectDescription">Description</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveSubjectBtn">
+                    <i class="fas fa-save me-2"></i>Save Subject
+                </button>
+            </div>
+        </div>
+    </div>
+                </div>
+                
+<!-- Add General Topic Modal -->
+<div class="modal fade" id="addGeneralTopicModal" tabindex="-1" aria-labelledby="addGeneralTopicModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addGeneralTopicModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Add New General Topic
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addGeneralTopicForm">
+                    {% csrf_token %}
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="generalTopicName" name="name" required>
+                        <label for="generalTopicName">General Topic Name</label>
+                    </div>
+                    <div class="form-floating">
+                        <textarea class="form-control" id="generalTopicDescription" name="description" style="height: 100px"></textarea>
+                        <label for="generalTopicDescription">Description</label>
+                    </div>
+            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveGeneralTopicBtn">
+                    <i class="fas fa-save me-2"></i>Save General Topic
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Subtopic Modal -->
+<div class="modal fade" id="addSubtopicModal" tabindex="-1" aria-labelledby="addSubtopicModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSubtopicModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Subtopic
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSubtopicForm">
+                    {% csrf_token %}
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="subtopicName" name="name" required>
+                        <label for="subtopicName">Subtopic Name</label>
+                    </div>
+                    <div class="form-floating">
+                        <textarea class="form-control" id="subtopicDescription" name="description" style="height: 100px"></textarea>
+                        <label for="subtopicDescription">Description</label>
+                    </div>
+                </form>
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveSubtopicBtn">
+                    <i class="fas fa-save me-2"></i>Save Subtopic
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add School Year Modal -->
+<div class="modal fade" id="addSchoolYearModal" tabindex="-1" aria-labelledby="addSchoolYearModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSchoolYearModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Add New School Year
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSchoolYearForm">
+                    {% csrf_token %}
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="schoolYearName" name="name" required>
+                        <label for="schoolYearName">School Year Name</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="date" class="form-control" id="schoolYearStart" name="start_date" required>
+                        <label for="schoolYearStart">Start Date</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="date" class="form-control" id="schoolYearEnd" name="end_date" required>
+                        <label for="schoolYearEnd">End Date</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveSchoolYearBtn">
+                    <i class="fas fa-save me-2"></i>Save School Year
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-gradient: linear-gradient(45deg, #0d6efd, #0a58ca);
+    --card-shadow: 0 0 20px rgba(0,0,0,0.1);
+    --border-radius: 15px;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+.container-fluid {
+    max-width: 100%;
+    padding: 2rem;
+}
+
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    padding: 1.25rem;
+    background: var(--primary-gradient) !important;
+}
+
+.card-header h3, .card-header h4 {
+    color: white;
+    font-weight: 600;
+    margin: 0;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.form-floating > .form-control,
+.form-floating > .form-select {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+}
+
+.form-floating > label {
+    padding: 1rem 0.75rem;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+}
+
+.extracted-questions-container {
+    flex: 1 1 auto;
+    min-height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.question-type-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.list-group-item {
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.badge {
+    font-size: 0.9em;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: var(--primary-gradient);
+}
+
+/* Custom scrollbar */
+.extracted-questions-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.extracted-questions-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.extracted-questions-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.extracted-questions-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem;
+}
+
+.card {
+        margin-bottom: 1rem;
+}
+
+.extracted-questions-container {
+    max-height: 400px;
+    }
+}
+
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spinner-text {
+    color: #333;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+#recentlyAddedQuestionsContainer::-webkit-scrollbar {
+    width: 8px;
+}
+#recentlyAddedQuestionsContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+#recentlyAddedQuestionsContainer::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+#recentlyAddedQuestionsContainer::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+</style>
+
+<div id="spinner" class="spinner-overlay" style="display: none;">
+    <div class="spinner-container">
+        <div class="spinner"></div>
+        <div class="spinner-text">Generating topics and analyzing question...</div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize form fields
+    const questionTypeSelect = document.getElementById('id_question_type');
+    const multipleChoiceFields = document.getElementById('multipleChoiceFields');
+    const trueFalseFields = document.getElementById('trueFalseFields');
+    const fileUploadFields = document.getElementById('fileUploadFields');
+    const choiceInput = document.getElementById('choiceInput');
+    const addChoiceBtn = document.getElementById('addChoiceBtn');
+    const choicesList = document.getElementById('choicesList');
+    const correctChoiceSelect = document.getElementById('id_correct_choice');
+    let choiceCount = 0;
+    const maxChoices = 6;
+    const extractQuestionBtn = document.getElementById('extractQuestionBtn');
+    const questionFile = document.getElementById('questionFile');
+
+    // Function to toggle sections based on question type
+    function toggleSections() {
+        const selectedType = questionTypeSelect.value;
+        
+        // Hide all sections first
+        [multipleChoiceFields, trueFalseFields, fileUploadFields].forEach(section => {
+            if (section) section.style.display = 'none';
+        });
+        
+        // Show relevant section
+        switch(selectedType) {
+            case 'multiple_choice':
+                if (multipleChoiceFields) multipleChoiceFields.style.display = 'block';
+                break;
+            case 'true_false':
+                if (trueFalseFields) trueFalseFields.style.display = 'block';
+                break;
+            case 'file_upload':
+                if (fileUploadFields) fileUploadFields.style.display = 'block';
+                break;
+        }
+    }
+
+    // Function to add a new choice
+    function addChoice() {
+        const choiceText = choiceInput.value.trim();
+        if (!choiceText) {
+            alert('Please enter a choice text');
+            return;
+        }
+
+        if (choiceCount >= maxChoices) {
+            alert('Maximum number of choices reached (6)');
+            return;
+        }
+
+        // Get the alphabetical label (A, B, C, etc.)
+        const label = String.fromCharCode(65 + choiceCount); // 65 is ASCII for 'A'
+
+        // Create choice item
+            const choiceItem = document.createElement('div');
+            choiceItem.className = 'list-group-item';
+            choiceItem.innerHTML = `
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="correct_choice" value="${choiceCount}" id="choice${choiceCount}">
+                <label class="form-check-label" for="choice${choiceCount}">
+                    <span class="badge bg-primary me-2">${label}</span>${choiceText}
+                </label>
+                </div>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-choice">
+                <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        // Add to choices list
+            choicesList.appendChild(choiceItem);
+        choiceCount++;
+
+        // Add remove button functionality
+        const removeBtn = choiceItem.querySelector('.remove-choice');
+        removeBtn.addEventListener('click', function() {
+            choiceItem.remove();
+            choiceCount--;
+            updateChoiceNumbers();
+        });
+            
+            // Clear input
+            choiceInput.value = '';
+            
+        // Update correct choice select
+        updateCorrectChoiceSelect();
+    }
+
+    // Function to update choice numbers after removal
+    function updateChoiceNumbers() {
+        const choices = choicesList.querySelectorAll('.list-group-item');
+        choices.forEach((choice, index) => {
+            const radio = choice.querySelector('input[type="radio"]');
+            const label = choice.querySelector('label');
+            const badge = choice.querySelector('.badge');
+            radio.value = index;
+            radio.id = `choice${index}`;
+            label.htmlFor = `choice${index}`;
+            badge.textContent = String.fromCharCode(65 + index); // Update alphabetical label
+        });
+        updateCorrectChoiceSelect();
+    }
+
+    // Function to update correct choice select
+    function updateCorrectChoiceSelect() {
+        if (!correctChoiceSelect) return;
+
+        // Clear existing options
+        correctChoiceSelect.innerHTML = '<option value="">Select correct choice</option>';
+
+        // Add new options
+        const choices = choicesList.querySelectorAll('.list-group-item');
+        choices.forEach((choice, index) => {
+            // Get the text content without the badge
+            const label = choice.querySelector('label');
+            const badge = choice.querySelector('.badge');
+            const choiceText = label.textContent.replace(badge.textContent, '').trim();
+            
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = choiceText;
+            correctChoiceSelect.appendChild(option);
+        });
+        }
+
+    // Add event listener for add choice button
+    if (addChoiceBtn) {
+        addChoiceBtn.addEventListener('click', addChoice);
+    }
+
+    // Add event listener for enter key in choice input
+    if (choiceInput) {
+    choiceInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+                addChoice();
+            }
+        });
+    }
+
+    // Initialize sections on page load
+    toggleSections();
+
+    // Add event listener for question type change
+    if (questionTypeSelect) {
+        questionTypeSelect.addEventListener('change', toggleSections);
+    }
+
+    // Initialize choices if editing a multiple choice question
+    const isEdit = document.querySelector('meta[name="is-edit"]')?.content === 'true';
+    const questionType = document.querySelector('meta[name="question-type"]')?.content;
+    
+    if (isEdit && questionType === 'multiple_choice') {
+        const choices = JSON.parse(document.querySelector('meta[name="choices"]')?.content || '[]');
+        choices.forEach(choice => {
+            choiceInput.value = choice.text;
+            addChoice();
+            if (choice.is_correct) {
+                const radio = choicesList.querySelector(`input[value="${choice.order}"]`);
+                if (radio) {
+                    radio.checked = true;
+                }
+            }
+        });
+    }
+
+    // Handle form submission
+    const questionForm = document.getElementById('questionForm');
+    if (questionForm) {
+        questionForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                // Basic form validation
+                const requiredFields = {
+                    'subject': 'Subject',
+                    'general_topic': 'General Topic',
+                    'subtopic': 'Subtopic',
+                    'id_question_text': 'Question Text',
+                    'id_question_type': 'Question Type',
+                    'id_level': 'Question Level'  // Add level to required fields
+                };
+
+                for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
+                    const input = document.getElementById(fieldId);
+                    if (!input || !input.value || (fieldId === 'id_question_text' && (input.value === '' || input.value === 'Enter your question here...'))) {
+                        alert(`Please fill in the ${fieldName} field.`);
+                        if (input) input.focus();
+                        return;
+                    }
+                }
+
+                // Get the question type
+                const questionType = document.getElementById('id_question_type').value;
+                
+                // Create FormData object
+                const formData = new FormData(questionForm);
+                
+                // Ensure level is included and is a valid number
+                const levelInput = document.getElementById('id_level');
+                if (levelInput) {
+                    const levelValue = parseInt(levelInput.value);
+                    console.log('DEBUG: Level input value:', levelInput.value);  // Debug log
+                    console.log('DEBUG: Parsed level value:', levelValue);  // Debug log
+                    if (isNaN(levelValue) || levelValue < 1) {
+                        alert('Please enter a valid level (minimum 1)');
+                        levelInput.focus();
+                        return;
+                    }
+                    formData.set('level', levelValue);
+                    console.log('DEBUG: Level value in formData:', formData.get('level'));  // Debug log
+                }
+
+                // Ensure question text is included
+                const questionTextInput = document.getElementById('id_question_text');
+                if (questionTextInput && questionTextInput.value && questionTextInput.value !== 'Enter your question here...') {
+                    formData.set('question_text', questionTextInput.value);
+                }
+                
+                // Ensure subtopic is included
+                const subtopicSelect = document.getElementById('subtopic');
+                if (subtopicSelect && subtopicSelect.value) {
+                    formData.set('subtopic', subtopicSelect.value);
+                }
+                
+                // Add choices for multiple choice questions
+                if (questionType === 'multiple_choice') {
+                    formData.append('choices', JSON.stringify(choices));
+                }
+                
+                // Add true/false answer
+                if (questionType === 'true_false') {
+                    formData.append('true_false_answer', trueFalseAnswer);
+                }
+
+                // Add essay/short answer
+                if (questionType in ['short_answer', 'essay']) {
+                    formData.append('essay_answer', essayAnswer);
+                }
+
+                // Handle file uploads
+                if (questionType === 'file_upload') {
+                    const fileInputs = document.querySelectorAll('input[type="file"]');
+                    fileInputs.forEach((input, index) => {
+                        if (input.files.length > 0) {
+                            formData.append(`file${index + 1}`, input.files[0]);
+                        }
+                    });
+                }
+
+                // Debug: Log form data
+                console.log('Form Data:');
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+
+                // Show loading state
+                const submitButton = questionForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+
+                // Submit the form
+                const response = await fetch(questionForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server Response:', errorText);
+                    throw new Error(errorText || 'Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log('Server Response:', data);
+                
+                if (data.status === 'success') {
+                    window.location.href = data.redirect_url;
+                } else {
+                    throw new Error(data.message || 'An error occurred while saving the question.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'An error occurred while saving the question. Please try again.');
+                
+                // Reset button state
+                const submitButton = questionForm.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+            }
+        });
+    }
+
+    // Clear question text when typing new text
+    const questionTextInput = document.getElementById('id_question_text');
+    if (questionTextInput) {
+        questionTextInput.addEventListener('focus', function() {
+            if (this.value === 'Enter your question here...') {
+                this.value = '';
+            }
+        });
+
+        questionTextInput.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.value = 'Enter your question here...';
+            }
+        });
+    }
+
+    // --- School Year Modal Logic ---
+    const addSchoolYearForm = document.getElementById('addSchoolYearForm');
+    const saveSchoolYearBtn = document.getElementById('saveSchoolYearBtn');
+    const schoolYearSelect = document.getElementById('id_school_year');
+    const addSchoolYearModal = new bootstrap.Modal(document.getElementById('addSchoolYearModal'));
+
+    if (saveSchoolYearBtn) {
+        saveSchoolYearBtn.addEventListener('click', function() {
+            saveSchoolYearBtn.disabled = true;
+            const formData = new FormData(addSchoolYearForm);
+            fetch('/school-year/add/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                saveSchoolYearBtn.disabled = false;
+                if (data.status === 'success') {
+                    // Add new school year to the select
+                    const option = document.createElement('option');
+                    option.value = data.school_year.id;
+                    option.textContent = data.school_year.name;
+                    schoolYearSelect.appendChild(option);
+                    schoolYearSelect.value = data.school_year.id;
+                    addSchoolYearForm.reset();
+                    addSchoolYearModal.hide();
+                } else {
+                    alert(data.message || 'Error adding school year.');
+                }
+            })
+            .catch(error => {
+                saveSchoolYearBtn.disabled = false;
+                console.error('Error:', error);
+                alert('An error occurred while adding the school year.');
+            });
+        });
+    }
+
+    const subjectSelect = document.getElementById('subject');
+    const generalTopicSelect = document.getElementById('general_topic');
+    const subtopicSelect = document.getElementById('subtopic');
+    const toastMessage = document.getElementById('toastMessage');
+    const successToast = new bootstrap.Toast(document.getElementById('successToast'));
+
+    // Function to show toast message
+    function showToast(message, isError = false) {
+        toastMessage.textContent = message;
+        successToast._element.classList.remove('bg-success', 'bg-danger');
+        successToast._element.classList.add(isError ? 'bg-danger' : 'bg-success');
+        successToast.show();
+    }
+
+    // Save new subject
+    document.getElementById('saveSubjectBtn').addEventListener('click', function() {
+        const form = document.getElementById('addSubjectForm');
+        const formData = new FormData(form);
+
+        fetch('{% url "add_subject" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                subjectSelect.appendChild(option);
+                subjectSelect.value = data.id;
+                $('#addSubjectModal').modal('hide');
+                form.reset();
+                showToast('Subject added successfully');
+            } else {
+                showToast(data.error || 'Error adding subject', true);
+            }
+        })
+        .catch(error => {
+            showToast('Error adding subject', true);
+            console.error('Error:', error);
+        });
+    });
+
+    // Load general topics when subject is selected
+    subjectSelect.addEventListener('change', function() {
+        const subjectId = this.value;
+        generalTopicSelect.innerHTML = '<option value="">Select a general topic</option>';
+        subtopicSelect.innerHTML = '<option value="">Select a subtopic</option>';
+        
+        if (subjectId) {
+            fetch(`{% url "get_general_topics" 0 %}`.replace('0', subjectId))
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        data.forEach(topic => {
+                            const option = document.createElement('option');
+                            option.value = topic.id;
+                            option.textContent = topic.name;
+                            option.setAttribute('data-saved', 'true');
+                            generalTopicSelect.appendChild(option);
+                        });
+                    } else {
+                        showToast('Error loading general topics', true);
+                    }
+                })
+                .catch(error => {
+                    showToast('Error loading general topics', true);
+                    console.error('Error:', error);
+                });
+        }
+    });
+
+    // Function to refresh general topics
+    async function refreshGeneralTopics(subjectId) {
+        const generalTopicSelect = document.getElementById('general_topic');
+        generalTopicSelect.innerHTML = '<option value="">Select a general topic</option>';
+        
+        if (subjectId) {
+            try {
+                const response = await fetch(`{% url "get_general_topics" 0 %}`.replace('0', subjectId));
+                const data = await response.json();
+                
+                if (Array.isArray(data)) {
+                    data.forEach(topic => {
+                        const option = document.createElement('option');
+                        option.value = topic.id;
+                        option.textContent = topic.name;
+                        option.setAttribute('data-saved', 'true');
+                        generalTopicSelect.appendChild(option);
+                    });
+                } else {
+                    showToast('Error loading general topics', true);
+                }
+            } catch (error) {
+                showToast('Error loading general topics', true);
+                console.error('Error:', error);
+            }
+        }
+    }
+
+    // Load subtopics when general topic is selected
+    generalTopicSelect.addEventListener('change', function() {
+        const generalTopicId = this.value;
+        subtopicSelect.innerHTML = '<option value="">Select a subtopic</option>';
+        
+        if (generalTopicId) {
+            fetch(`/general-topic/${generalTopicId}/subtopics/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        data.forEach(subtopic => {
+                            const option = document.createElement('option');
+                            option.value = subtopic.id;
+                            option.textContent = subtopic.name;
+                            subtopicSelect.appendChild(option);
+                        });
+                    } else {
+                        showToast('Error loading subtopics', true);
+                    }
+                })
+                .catch(error => {
+                    showToast('Error loading subtopics', true);
+                    console.error('Error:', error);
+                });
+        }
+    });
+
+    // Show save button for general topic when a new value is selected
+    document.getElementById('general_topic').addEventListener('change', function() {
+        const saveGeneralTopicBtn = document.getElementById('saveSuggestedGeneralTopicBtn');
+        const selectedOption = this.options[this.selectedIndex];
+        const placeholderText = 'Select a general topic';
+        
+        // Hide save button if selecting from dropdown (not a new suggested topic)
+        if (selectedOption && !selectedOption.hasAttribute('data-suggested')) {
+            saveGeneralTopicBtn.style.display = 'none';
+            return;
+        }
+        
+        if (this.value && 
+            selectedOption && 
+            !selectedOption.hasAttribute('data-saved') && 
+            selectedOption.text !== placeholderText &&
+            !selectedOption.text.includes(placeholderText) &&
+            saveGeneralTopicBtn.dataset.showAfterUse === 'true') {
+            saveGeneralTopicBtn.style.display = 'inline-block';
+        } else {
+            saveGeneralTopicBtn.style.display = 'none';
+        }
+    });
+
+    // Show save button for subtopic when a new value is selected
+    document.getElementById('subtopic').addEventListener('change', function() {
+        const saveSubtopicBtn = document.getElementById('saveSuggestedSubtopicBtn');
+        const selectedOption = this.options[this.selectedIndex];
+        const placeholderText = 'Select a subtopic';
+        const generalTopicSelect = document.getElementById('general_topic');
+        const generalTopicValue = generalTopicSelect.value;
+        
+        // Hide save button if selecting from dropdown (not a new suggested subtopic)
+        if (selectedOption && !selectedOption.hasAttribute('data-suggested')) {
+            saveSubtopicBtn.style.display = 'none';
+            return;
+        }
+        
+        if (this.value && 
+            selectedOption && 
+            !selectedOption.hasAttribute('data-saved') && 
+            selectedOption.text !== placeholderText &&
+            !selectedOption.text.includes(placeholderText) &&
+            generalTopicValue &&
+            saveSubtopicBtn.dataset.showAfterUse === 'true') {
+            saveSubtopicBtn.style.display = 'inline-block';
+        } else {
+            saveSubtopicBtn.style.display = 'none';
+        }
+    });
+
+    // Also hide save button when general topic changes
+    document.getElementById('general_topic').addEventListener('change', function() {
+        const saveSubtopicBtn = document.getElementById('saveSuggestedSubtopicBtn');
+        if (!this.value || saveSubtopicBtn.dataset.showAfterUse !== 'true') {
+            saveSubtopicBtn.style.display = 'none';
+        }
+    });
+
+    // Save new general topic
+    document.getElementById('saveGeneralTopicBtn').addEventListener('click', function() {
+        const form = document.getElementById('addGeneralTopicForm');
+        const formData = new FormData(form);
+        formData.append('subject_id', subjectSelect.value);
+
+        if (!subjectSelect.value) {
+            showToast('Please select a subject first', true);
+            return;
+        }
+
+        fetch('{% url "add_general_topic" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                option.setAttribute('data-saved', 'true');
+                generalTopicSelect.appendChild(option);
+                generalTopicSelect.value = data.id;
+                
+                // Reset form and close modal
+                form.reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addGeneralTopicModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                showToast('General topic saved successfully');
+            } else {
+                showToast(data.error || 'Error saving general topic', true);
+            }
+        })
+        .catch(error => {
+            showToast('Error saving general topic', true);
+            console.error('Error:', error);
+        });
+    });
+
+    // Save new subtopic
+    document.getElementById('saveSubtopicBtn').addEventListener('click', function() {
+        const form = document.getElementById('addSubtopicForm');
+        const formData = new FormData(form);
+        formData.append('general_topic_id', generalTopicSelect.value);
+
+        if (!generalTopicSelect.value) {
+            showToast('Please select a general topic first', true);
+            return;
+        }
+
+        fetch('{% url "add_subtopic" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                option.setAttribute('data-saved', 'true');
+                subtopicSelect.appendChild(option);
+                subtopicSelect.value = data.id;
+                
+                // Reset form and close modal
+                form.reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addSubtopicModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                showToast('Subtopic saved successfully');
+            } else {
+                showToast(data.error || 'Error saving subtopic', true);
+            }
+        })
+        .catch(error => {
+            showToast('Error saving subtopic', true);
+            console.error('Error:', error);
+        });
+    });
+
+    // If editing, trigger change events to load existing data
+    if (subjectSelect.value) {
+        subjectSelect.dispatchEvent(new Event('change'));
+    }
+    if (generalTopicSelect.value) {
+        generalTopicSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Show/hide file upload fields and extract button based on question type
+    questionTypeSelect.addEventListener('change', function() {
+        if (this.value === 'file_upload') {
+            fileUploadFields.style.display = 'block';
+            updateExtractButtonVisibility();
+        } else {
+            fileUploadFields.style.display = 'none';
+            extractQuestionBtn.style.display = 'none';
+        }
+    });
+    
+    // Update extract button visibility when file is selected
+    questionFile.addEventListener('change', function() {
+        updateExtractButtonVisibility();
+    });
+    
+    function updateExtractButtonVisibility() {
+        if (questionTypeSelect.value === 'file_upload' && questionFile.files.length > 0) {
+            extractQuestionBtn.style.display = 'inline-block';
+        } else {
+            extractQuestionBtn.style.display = 'none';
+        }
+    }
+    
+    // Handle file upload and question extraction
+    extractQuestionBtn.addEventListener('click', function() {
+        const file = questionFile.files[0];
+        
+        if (!file) {
+            showToast('Please select a file first', true);
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Show loading state
+        extractQuestionBtn.disabled = true;
+        extractQuestionBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Extracting...';
+        
+        // Send file to server for extraction
+        fetch('{% url "extract_question" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                // Process extracted questions
+                const extractedQuestions = processExtractedContent(data.content);
+                
+                if (extractedQuestions.length === 0) {
+                    showToast('No questions found in the file', true);
+                } else {
+                    // Display extracted questions
+                    displayExtractedQuestions(extractedQuestions);
+                    showToast(`Successfully extracted ${extractedQuestions.length} questions`);
+                }
+            } else {
+                showToast(data.message || 'Error extracting questions', true);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred while extracting questions: ' + error.message, true);
+        })
+        .finally(() => {
+            // Reset button state
+            extractQuestionBtn.disabled = false;
+            extractQuestionBtn.innerHTML = '<i class="fas fa-file-upload me-2"></i>Extract Question';
+        });
+    });
+
+    // Function to process extracted content and identify questions
+    function processExtractedContent(content) {
+        const questions = [];
+        if (!content || !content.text) {
+            console.error('Invalid content format:', content);
+            return questions;
+        }
+
+        const lines = content.text.split('\n');
+        let currentQuestion = null;
+        let currentType = null;
+        let currentChoices = [];
+        let currentAnswer = null;
+        let currentImages = [];
+        let currentFormatting = [];
+        let currentGeneralTopic = null;
+        let currentSubtopic = null;
+        let currentAnswerLabel = null;
+        let currentLevel = null;
+        let currentPoints = null;
+        let currentMetadata = {};
+
+        // Question detection patterns
+        const questionPatterns = [
+            /^\d+\.\s/,                    // 1. Question
+            /^Q\d+\.\s/,                   // Q1. Question
+            /^Question\s\d+:/,             // Question 1:
+            /^[A-Z]\.\s/,                  // A. Question
+            /^[a-z]\)\s/,                  // a) Question
+            /^[IVX]+\.\s/,                 // I. Question
+            /^[ivx]+\)\s/,                 // i) Question
+            /^[•●]\s/,                     // • Question
+            /^[-*]\s/,                     // - Question
+            /^\(\d+\)\s/                   // (1) Question
+        ];
+
+        // Answer detection patterns
+        const answerPatterns = [
+            /^(Answer|Solution|Correct Answer|Key):\s*(.+)/i,
+            /^(Ans\.?|Sol\.?):\s*(.+)/i,
+            /^[A-Z]\.\s*(.+)\s*\(correct\)/i,
+            /^[a-z]\)\s*(.+)\s*\(correct\)/i,
+            /^✓\s*(.+)/,
+            /^→\s*(.+)/
+        ];
+
+        // Choice detection patterns
+        const choicePatterns = [
+            /^[A-F]\.\s/,                  // A. Choice
+            /^[a-f]\)\s/,                  // a) Choice
+            /^[A-F]\)\s/,                  // A) Choice
+            /^[a-f]\.\s/,                  // a. Choice
+            /^\(\d+\)\s/,                  // (1) Choice
+            /^[•●]\s/,                     // • Choice
+            /^[-*]\s/                      // - Choice
+        ];
+
+        // Metadata detection patterns
+        const metadataPatterns = {
+            level: /^(Level|Difficulty):\s*(\d+)/i,
+            points: /^(Points|Marks):\s*(\d+)/i,
+            topic: /^(Topic|Subject):\s*(.+)/i,
+            subtopic: /^(Subtopic|Subcategory):\s*(.+)/i,
+            type: /^(Type|Question Type):\s*(.+)/i
+        };
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            // Skip empty lines
+            if (!line) continue;
+
+            // Check for metadata
+            for (const [key, pattern] of Object.entries(metadataPatterns)) {
+                const match = line.match(pattern);
+                if (match) {
+                    currentMetadata[key] = match[2].trim();
+                    continue;
+                }
+            }
+
+            // Check for general topic
+            if (line.match(/^General Topic:\s*(.+)/i)) {
+                currentGeneralTopic = line.match(/^General Topic:\s*(.+)/i)[1].trim();
+                continue;
+            }
+
+            // Check for subtopic
+            if (line.match(/^Subtopic:\s*(.+)/i)) {
+                currentSubtopic = line.match(/^Subtopic:\s*(.+)/i)[1].trim();
+                continue;
+            }
+
+            // Check for answer patterns
+            let answerMatch = null;
+            for (const pattern of answerPatterns) {
+                const match = line.match(pattern);
+                if (match) {
+                    answerMatch = match;
+                    break;
+                }
+            }
+
+            if (answerMatch) {
+                currentAnswerLabel = answerMatch[1];
+                currentAnswer = answerMatch[2].trim();
+                continue;
+            }
+
+            // Check for question patterns
+            let isQuestion = false;
+            for (const pattern of questionPatterns) {
+                if (line.match(pattern)) {
+                    isQuestion = true;
+                    break;
+                }
+            }
+
+            if (isQuestion) {
+                // Save previous question if exists
+                if (currentQuestion) {
+                    questions.push({
+                        text: currentQuestion.trim(),
+                        type: currentType || 'short_answer',
+                        choices: currentType === 'multiple_choice' ? currentChoices : null,
+                        answer: currentAnswer,
+                        answer_label: currentAnswerLabel,
+                        images: [...currentImages],
+                        formatting: [...currentFormatting],
+                        general_topic: currentGeneralTopic,
+                        subtopic: currentSubtopic,
+                        level: currentLevel,
+                        points: currentPoints,
+                        metadata: {...currentMetadata}
+                    });
+                }
+
+                // Start new question
+                currentQuestion = line.replace(/^\d+\.\s|^Q\d+\.\s|^Question\s\d+:|^[A-Z]\.\s|^[a-z]\)\s|^[IVX]+\.\s|^[ivx]+\)\s|^[•●]\s|^[-*]\s|^\(\d+\)\s/, '');
+                currentType = null;
+                currentChoices = [];
+                currentAnswer = null;
+                currentAnswerLabel = null;
+                currentImages = [];
+                currentFormatting = [];
+                currentMetadata = {};
+            }
+            // Check for choice patterns
+            else {
+                let isChoice = false;
+                for (const pattern of choicePatterns) {
+                    if (line.match(pattern)) {
+                        isChoice = true;
+                        break;
+                    }
+                }
+
+                if (isChoice) {
+                    if (!currentType) currentType = 'multiple_choice';
+                    const choiceText = line.replace(/^[A-F]\.\s|^[a-f]\)\s|^[A-F]\)\s|^[a-f]\.\s|^\(\d+\)\s|^[•●]\s|^[-*]\s/, '').trim();
+                    const isCorrect = line.match(/\(correct\)/i) || line.match(/✓/) || line.match(/→/);
+                    currentChoices.push({
+                        text: choiceText,
+                        isCorrect: !!isCorrect
+                    });
+                }
+                // Check for true/false indicators
+                else if (line.match(/^(True|False)\s*:/i)) {
+                    if (!currentType) currentType = 'true_false';
+                    currentAnswer = line.match(/True/i) ? 'true' : 'false';
+                    currentAnswerLabel = 'Correct Answer';
+                }
+                // Check for short answer indicators
+                else if (line.match(/^Answer:\s/i) || line.match(/^Solution:\s/i)) {
+                    if (!currentType) currentType = 'short_answer';
+                    currentAnswer = line.replace(/^Answer:\s|^Solution:\s/i, '').trim();
+                    currentAnswerLabel = line.match(/^Answer:/i) ? 'Answer' : 'Solution';
+                }
+                // Check for essay indicators
+                else if (line.match(/^Explain:\s/i) || line.match(/^Discuss:\s/i)) {
+                    if (!currentType) currentType = 'essay';
+                    currentAnswer = line.replace(/^Explain:\s|^Discuss:\s/i, '').trim();
+                    currentAnswerLabel = line.match(/^Explain:/i) ? 'Explanation' : 'Discussion';
+                }
+                // Check for image indicators
+                else if (line.match(/^\[Image\]/i)) {
+                    const imageIndex = currentImages.length;
+                    if (content.images && content.images[imageIndex]) {
+                        currentImages.push(content.images[imageIndex]);
+                    }
+                }
+                // If no type is determined yet, assume it's part of the question
+                else if (!currentType) {
+                    currentQuestion = currentQuestion ? currentQuestion + ' ' + line : line;
+                    // Preserve formatting
+                    if (line.includes('*') || line.includes('_') || line.includes('`')) {
+                        currentFormatting.push({
+                            line: line,
+                            position: currentQuestion.length - line.length
+                        });
+                    }
+                }
+            }
+        }
+
+        // Add the last question if exists
+        if (currentQuestion) {
+            questions.push({
+                text: currentQuestion.trim(),
+                type: currentType || 'short_answer',
+                choices: currentType === 'multiple_choice' ? currentChoices : null,
+                answer: currentAnswer,
+                answer_label: currentAnswerLabel,
+                images: currentImages,
+                formatting: currentFormatting,
+                general_topic: currentGeneralTopic,
+                subtopic: currentSubtopic,
+                level: currentLevel,
+                points: currentPoints,
+                metadata: currentMetadata
+            });
+        }
+
+        return questions;
+    }
+
+    // Function to display extracted questions
+    function displayExtractedQuestions(questions) {
+        const containers = {
+            'multiple_choice': document.getElementById('extractedMultipleChoice'),
+            'true_false': document.getElementById('extractedTrueFalse'),
+            'short_answer': document.getElementById('extractedShortAnswer'),
+            'essay': document.getElementById('extractedEssay')
+        };
+
+        // Clear existing questions
+        Object.entries(containers).forEach(([type, container]) => {
+            if (container) {
+                container.innerHTML = '';
+                // Hide the parent section initially
+                const section = container.closest('.question-type-section');
+                if (section) {
+                    section.style.display = 'none';
+                }
+            }
+        });
+
+        if (!questions || questions.length === 0) {
+            showToast('No questions found in the file', true);
+            return;
+        }
+
+        // Group questions by type
+        const questionsByType = {
+            'multiple_choice': [],
+            'true_false': [],
+            'short_answer': [],
+            'essay': []
+        };
+
+        questions.forEach((question, index) => {
+            const type = question.type || 'short_answer';
+            if (questionsByType[type]) {
+                questionsByType[type].push({question, index});
+            }
+        });
+
+        // Display questions by type
+        Object.entries(questionsByType).forEach(([type, questionList]) => {
+            const container = containers[type];
+            const section = container?.closest('.question-type-section');
+            
+            if (container && section) {
+                if (questionList.length > 0) {
+                    // Show section and make container scrollable
+                    section.style.display = 'flex';
+                    container.style.maxHeight = '300px';
+                    container.style.overflowY = 'auto';
+                    container.style.paddingRight = '10px';
+                    
+                    // Add custom scrollbar styles
+                    container.style.scrollbarWidth = 'thin';
+                    container.style.scrollbarColor = '#888 #f1f1f1';
+                    
+                    // Add questions to container
+                    questionList.forEach(({question, index}) => {
+                        const questionElement = createQuestionElement(question, index);
+                        if (questionElement) {
+                            container.appendChild(questionElement);
+                        }
+                    });
+                } else {
+                    // Hide section if no questions
+                    section.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // Function to check if topic exists in database
+    async function checkTopicExists(type, name, parentId) {
+        const endpoint = type === 'general_topic' ? 
+            `{% url "check_general_topic_exists" %}` : 
+            `{% url "check_subtopic_exists" %}`;
+        
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append(type === 'general_topic' ? 'subject_id' : 'general_topic_id', parentId);
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+            const data = await response.json();
+            return data.exists;
+        } catch (error) {
+            console.error('Error checking topic existence:', error);
+            return false;
+        }
+    }
+
+    // Function to create question element with images and formatting
+    function createQuestionElement(question, index) {
+        if (!question || !question.text) {
+            console.error('Invalid question data:', question);
+            return null;
+        }
+
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'extracted-question';
+        questionDiv.setAttribute('data-question-id', index);
+        
+        // Add question text with formatting
+        let questionText = question.text;
+        if (question.formatting && question.formatting.length > 0) {
+            question.formatting.forEach(format => {
+                const formattedText = format.line
+                    .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')
+                    .replace(/_([^_]+)_/g, '<em>$1</em>')
+                    .replace(/`([^`]+)`/g, '<code>$1</code>');
+                questionText = questionText.replace(format.line, formattedText);
+            });
+        }
+        
+        // Add images if any
+        if (question.images && question.images.length > 0) {
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'question-image-container';
+            
+            question.images.forEach(image => {
+                if (image && image.data) {
+                    const img = document.createElement('img');
+                    img.className = 'question-image';
+                    img.src = `data:image/png;base64,${image.data}`;
+                    img.onclick = () => showImageModal(img.src);
+                    imageContainer.appendChild(img);
+                }
+            });
+            
+            if (imageContainer.children.length > 0) {
+                questionDiv.appendChild(imageContainer);
+            }
+        }
+        
+        // Add question text with topic information
+        const textDiv = document.createElement('div');
+        textDiv.className = 'question-text';
+        
+        // Add topic information if available
+        if (question.general_topic || question.subtopic) {
+            const topicInfo = [];
+            if (question.general_topic) {
+                topicInfo.push(`<span class="text-primary">General Topic: ${question.general_topic}</span>`);
+            } else {
+                topicInfo.push(`<span class="text-primary">General Topic: </span>`);
+            }
+            if (question.subtopic) {
+                topicInfo.push(`<span class="text-info">Subtopic: ${question.subtopic}</span>`);
+            } else {
+                topicInfo.push(`<span class="text-info">Subtopic: </span>`);
+            }
+            textDiv.innerHTML = `<div class="mb-2">${topicInfo.join(' | ')}</div>`;
+        }
+        
+        textDiv.innerHTML += questionText;
+        questionDiv.appendChild(textDiv);
+        
+        // Add choices if multiple choice
+        if (question.type === 'multiple_choice' && question.choices && question.choices.length > 0) {
+            const choicesList = document.createElement('ul');
+            choicesList.className = 'choices-list';
+            
+            question.choices.forEach((choice, idx) => {
+                if (choice && choice.text) {
+                    const li = document.createElement('li');
+                    li.className = `choice-item ${choice.isCorrect ? 'correct-choice' : ''}`;
+                    const label = String.fromCharCode(65 + idx); // A, B, C, etc.
+                    li.innerHTML = `<span class="choice-label">${label}.</span> ${choice.text}`;
+                    choicesList.appendChild(li);
+                }
+            });
+            
+            if (choicesList.children.length > 0) {
+                questionDiv.appendChild(choicesList);
+            }
+        }
+        
+        // Add answer if available
+        if (question.answer) {
+            const answerDiv = document.createElement('div');
+            answerDiv.className = 'answer-section mt-2';
+            const answerLabel = question.answer_label || 'Answer';
+            answerDiv.innerHTML = `<strong class="text-success">${answerLabel}: ${question.answer}</strong>`;
+            questionDiv.appendChild(answerDiv);
+        } else {
+            const answerDiv = document.createElement('div');
+            answerDiv.className = 'answer-section mt-2';
+            answerDiv.innerHTML = `<strong class="text-success">Answer: </strong>`;
+            questionDiv.appendChild(answerDiv);
+        }
+
+        // Add action buttons
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'extracted-question-actions mt-3';
+        
+        const useButton = document.createElement('button');
+        useButton.className = 'btn btn-primary btn-action';
+        useButton.innerHTML = '<i class="fas fa-check"></i> Use';
+        useButton.onclick = () => useExtractedQuestion(question);
+        
+        const editButton = document.createElement('button');
+        editButton.className = 'btn btn-info btn-action';
+        editButton.innerHTML = '<i class="fas fa-edit"></i> Edit';
+        editButton.onclick = () => editExtractedQuestion(question, index);
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-danger btn-action';
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete';
+        deleteButton.onclick = () => deleteExtractedQuestion(question, index);
+        
+        actionsDiv.appendChild(useButton);
+        actionsDiv.appendChild(editButton);
+        actionsDiv.appendChild(deleteButton);
+        questionDiv.appendChild(actionsDiv);
+        
+        return questionDiv;
+    }
+
+    // Function to use an extracted question
+    async function useExtractedQuestion(question) {
+        // Store current school year and subject values
+        const currentSchoolYear = document.getElementById('id_school_year').value;
+        const currentSubject = document.getElementById('subject').value;
+        
+        // Reset all form fields
+        const form = document.getElementById('questionForm');
+        form.reset();
+        
+        // Restore school year and subject values
+        document.getElementById('id_school_year').value = currentSchoolYear;
+        document.getElementById('subject').value = currentSubject;
+        
+        // Reset choices list
+        const choicesList = document.getElementById('choicesList');
+        if (choicesList) {
+            choicesList.innerHTML = '';
+        }
+        
+        // Reset choice count
+        choiceCount = 0;
+        
+        // Set question text
+        document.getElementById('id_question_text').value = question.text;
+        
+        // Set question type and trigger change event to show appropriate fields
+        const questionTypeSelect = document.getElementById('id_question_type');
+        questionTypeSelect.value = question.type;
+        questionTypeSelect.dispatchEvent(new Event('change'));
+        
+        // Handle multiple choice questions
+        if (question.type === 'multiple_choice' && question.choices) {
+            // Add new choices one by one
+            for (const choice of question.choices) {
+                const choiceInput = document.getElementById('choiceInput');
+                choiceInput.value = choice.text;
+                addChoice();
+                
+                // Set correct choice after a short delay to ensure the choice is added
+                setTimeout(() => {
+                    const radio = choicesList.querySelector(`input[value="${question.choices.indexOf(choice)}"]`);
+                    if (radio && choice.isCorrect) {
+                        radio.checked = true;
+                    }
+                }, 100);
+            }
+        }
+        
+        // Handle true/false questions
+        if (question.type === 'true_false' && question.answer) {
+            document.getElementById('id_true_false_answer').value = question.answer;
+        }
+        
+        // Handle short answer and essay questions
+        if ((question.type === 'short_answer' || question.type === 'essay') && question.answer) {
+            document.getElementById('id_essay_answer').value = question.answer;
+        }
+
+        // Refresh general topics for the current subject
+        await refreshGeneralTopics(currentSubject);
+
+        // Check for existing general topic
+        if (question.general_topic) {
+            const generalTopicSelect = document.getElementById('general_topic');
+            const existingGeneralTopic = Array.from(generalTopicSelect.options).find(option => 
+                option.text === question.general_topic && option.hasAttribute('data-saved')
+            );
+
+            if (existingGeneralTopic) {
+                // Use existing general topic
+                generalTopicSelect.value = existingGeneralTopic.value;
+                generalTopicSelect.dispatchEvent(new Event('change'));
+                
+                // Refresh subtopics for the selected general topic
+                await refreshSubtopics(existingGeneralTopic.value);
+            } else {
+                // Add new suggested general topic
+                const generalTopicOption = document.createElement('option');
+                generalTopicOption.value = question.general_topic;
+                generalTopicOption.textContent = question.general_topic;
+                generalTopicOption.setAttribute('data-suggested', 'true');
+                generalTopicSelect.appendChild(generalTopicOption);
+                generalTopicSelect.value = question.general_topic;
+                generalTopicSelect.dispatchEvent(new Event('change'));
+
+                // Show save button for general topic
+                const saveGeneralTopicBtn = document.getElementById('saveSuggestedGeneralTopicBtn');
+                if (saveGeneralTopicBtn) {
+                    saveGeneralTopicBtn.style.display = 'inline-block';
+                    saveGeneralTopicBtn.dataset.showAfterUse = 'true';
+                }
+            }
+        }
+
+        // Check for existing subtopic
+        if (question.subtopic) {
+            const subtopicSelect = document.getElementById('subtopic');
+            const existingSubtopic = Array.from(subtopicSelect.options).find(option => 
+                option.text === question.subtopic && option.hasAttribute('data-saved')
+            );
+
+            if (existingSubtopic) {
+                // Use existing subtopic
+                subtopicSelect.value = existingSubtopic.value;
+            } else {
+                // Add new suggested subtopic
+                const subtopicOption = document.createElement('option');
+                subtopicOption.value = question.subtopic;
+                subtopicOption.textContent = question.subtopic;
+                subtopicOption.setAttribute('data-suggested', 'true');
+                subtopicSelect.appendChild(subtopicOption);
+                subtopicSelect.value = question.subtopic;
+
+                // Show save button for subtopic
+                const saveSubtopicBtn = document.getElementById('saveSuggestedSubtopicBtn');
+                if (saveSubtopicBtn) {
+                    saveSubtopicBtn.style.display = 'inline-block';
+                    saveSubtopicBtn.dataset.showAfterUse = 'true';
+                }
+            }
+        }
+
+        // Display the answer behind the Suggest Topics button
+        const answerLabel = document.getElementById('generatedAnswerLabel');
+        const answerText = document.getElementById('generatedAnswerText');
+        if (answerLabel && answerText) {
+            answerText.textContent = question.answer || '';
+            answerLabel.style.display = 'inline-block';
+        }
+
+        // Show success message
+        showToast('Question loaded for use!');
+    }
+
+    // Function to edit an extracted question
+    function editExtractedQuestion(question, index) {
+        // Set question text
+        document.getElementById('id_question_text').value = question.text;
+        
+        // Set question type
+        document.getElementById('id_question_type').value = question.type;
+        
+        // Handle multiple choice questions
+        if (question.type === 'multiple_choice' && question.choices) {
+            // Clear existing choices
+            const choicesList = document.getElementById('choicesList');
+            choicesList.innerHTML = '';
+            
+            // Add new choices
+            question.choices.forEach((choice, idx) => {
+                const choiceInput = document.getElementById('choiceInput');
+                choiceInput.value = choice.text;
+                addChoice();
+                
+                // Set correct choice
+                if (choice.isCorrect) {
+                    const radio = choicesList.querySelector(`input[value="${idx}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                }
+            });
+        }
+        
+        // Handle true/false questions
+        if (question.type === 'true_false' && question.answer) {
+            document.getElementById('id_true_false_answer').value = question.answer;
+        }
+        
+        // Handle short answer and essay questions
+        if ((question.type === 'short_answer' || question.type === 'essay') && question.answer) {
+            document.getElementById('id_essay_answer').value = question.answer;
+        }
+        
+        // Show success message
+        showToast('Question loaded for editing!');
+        
+        // Remove the question from the extracted list
+        deleteExtractedQuestion(question, index);
+    }
+
+    function createImageModal() {
+        const modal = document.createElement('div');
+        modal.className = 'image-modal';
+        modal.innerHTML = `
+            <span class="close-modal">&times;</span>
+            <img class="modal-content">
+        `;
+        document.body.appendChild(modal);
+
+        const closeBtn = modal.querySelector('.close-modal');
+        closeBtn.onclick = () => modal.style.display = 'none';
+
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+
+        return modal;
+    }
+
+    function showImageModal(imageSrc) {
+        let modal = document.querySelector('.image-modal');
+        if (!modal) modal = createImageModal();
+
+        const modalImg = modal.querySelector('.modal-content');
+        modalImg.src = imageSrc;
+        modal.style.display = 'flex';
+    }
+
+    // Function to delete an extracted question
+    function deleteExtractedQuestion(question, index) {
+        const questionElement = document.querySelector(`[data-question-id="${index}"]`);
+        if (questionElement) {
+            questionElement.remove();
+            showToast('Question deleted successfully!', 'success');
+        }
+    }
+
+    // --- Pending Questions State ---
+    const pendingQuestionsBySubject = {};
+    // Get subjects as a JS array
+    const subjects = JSON.parse(document.getElementById('subjects-data').textContent);
+
+    function renderRecentlyAddedQuestions() {
+        const container = document.getElementById('recentlyAddedQuestionsContainer');
+        const pendingQuestionsLabel = document.getElementById('pendingQuestionsLabel');
+        container.innerHTML = '';
+        let hasAny = false;
+        let totalPending = 0;
+        for (const subjectId in pendingQuestionsBySubject) {
+            const questions = pendingQuestionsBySubject[subjectId];
+            if (!questions.length) continue;
+            hasAny = true;
+            totalPending += questions.length;
+            const subject = subjects.find(s => s.id == subjectId);
+            const subjectDiv = document.createElement('div');
+            subjectDiv.className = 'mb-4';
+            subjectDiv.innerHTML = `<h5 class="fw-bold text-primary">${subject ? subject.name : 'Unknown Subject'}</h5>`;
+            // Group questions by school year
+            const questionsByYear = {};
+            questions.forEach(q => {
+                const year = q.school_year_name || 'No School Year';
+                if (!questionsByYear[year]) questionsByYear[year] = [];
+                questionsByYear[year].push(q);
+            });
+            for (const year in questionsByYear) {
+                const yearHeader = document.createElement('h6');
+                yearHeader.className = 'fw-semibold text-success ms-3';
+                yearHeader.textContent = year;
+                subjectDiv.appendChild(yearHeader);
+                const ul = document.createElement('ul');
+                ul.className = 'list-group mb-3';
+                questionsByYear[year].forEach((q, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    li.innerHTML = `<div><span class="fw-semibold">${q.question_text}</span> <span class="badge bg-info ms-2">${q.question_type_display}</span> <span class="badge bg-secondary ms-2">${q.subtopic_name}</span></div><button class="btn btn-sm btn-outline-danger remove-pending" data-subject="${subjectId}" data-idx="${questions.indexOf(q)}"><i class="fas fa-times"></i></button>`;
+                    ul.appendChild(li);
+                });
+                subjectDiv.appendChild(ul);
+            }
+            // Save All Button
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn btn-success';
+            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save All Questions';
+            saveBtn.onclick = () => saveAllQuestions(subjectId);
+            subjectDiv.appendChild(saveBtn);
+            container.appendChild(subjectDiv);
+        }
+        if (!hasAny) {
+            container.innerHTML = '<div class="alert alert-warning">No pending questions. Add some using the form above.</div>';
+            pendingQuestionsLabel.style.display = 'none';
+        } else {
+            pendingQuestionsLabel.textContent = `${totalPending} pending question${totalPending > 1 ? 's' : ''} added`;
+            pendingQuestionsLabel.style.display = 'inline-block';
+        }
+        // Remove button logic
+        container.querySelectorAll('.remove-pending').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const subjectId = this.getAttribute('data-subject');
+                const idx = parseInt(this.getAttribute('data-idx'));
+                pendingQuestionsBySubject[subjectId].splice(idx, 1);
+                if (!pendingQuestionsBySubject[subjectId].length) delete pendingQuestionsBySubject[subjectId];
+                renderRecentlyAddedQuestions();
+            });
+        });
+    }
+
+    function getFormData() {
+        // Collect and validate form data (similar to previous logic)
+        const subjectSelect = document.getElementById('subject');
+        const generalTopicSelect = document.getElementById('general_topic');
+        const subtopicSelect = document.getElementById('subtopic');
+        const questionTextInput = document.getElementById('id_question_text');
+        const questionTypeSelect = document.getElementById('id_question_type');
+        const levelInput = document.getElementById('id_level');
+        if (!subjectSelect.value || !generalTopicSelect.value || !subtopicSelect.value || !questionTextInput.value || !questionTypeSelect.value || !levelInput.value) {
+            alert('Please fill in all required fields.');
+            return null;
+        }
+        const questionType = questionTypeSelect.value;
+        let question_type_display = questionTypeSelect.options[questionTypeSelect.selectedIndex].text;
+        let subtopic_name = subtopicSelect.options[subtopicSelect.selectedIndex].text;
+        // For multiple choice, collect choices
+        let choices = [];
+        if (questionType === 'multiple_choice') {
+            const choicesList = document.getElementById('choicesList');
+            const choiceItems = choicesList.querySelectorAll('.list-group-item');
+            choiceItems.forEach((item, index) => {
+                const label = item.querySelector('label');
+                const badge = item.querySelector('.badge');
+                const choiceText = label.textContent.replace(badge.textContent, '').trim();
+                const isCorrect = item.querySelector('input[type="radio"]').checked;
+                choices.push({ text: choiceText, is_correct: isCorrect, order: index });
+            });
+            if (!choices.length) {
+                alert('Please add at least one choice for multiple choice questions.');
+                return null;
+            }
+            if (!choices.some(c => c.is_correct)) {
+                alert('Please select a correct choice.');
+                return null;
+            }
+        }
+        // For true/false
+        let true_false_answer = null;
+        if (questionType === 'true_false') {
+            true_false_answer = document.getElementById('id_true_false_answer').value;
+            if (!true_false_answer) {
+                alert('Please select a correct answer for true/false question.');
+                return null;
+            }
+        }
+        // For essay/short answer
+        let essay_answer = null;
+        if (["short_answer", "essay"].includes(questionType)) {
+            essay_answer = document.getElementById('id_essay_answer').value;
+            if (!essay_answer) {
+                alert('Please provide the correct answer.');
+                return null;
+            }
+        }
+        // Compose question object
+        return {
+            subject_id: subjectSelect.value,
+            subject_name: subjectSelect.options[subjectSelect.selectedIndex].text,
+            general_topic_id: generalTopicSelect.value,
+            subtopic_id: subtopicSelect.value,
+            subtopic_name,
+            question_text: questionTextInput.value,
+            question_type: questionType,
+            question_type_display,
+            choices,
+            true_false_answer,
+            essay_answer,
+            // Add school year info
+            school_year_id: document.getElementById('id_school_year')?.value,
+            school_year_name: document.getElementById('id_school_year')?.selectedOptions[0]?.text || '',
+            // Add level info
+            level: parseInt(levelInput.value)
+        };
+    }
+
+    document.getElementById('addToPendingBtn').addEventListener('click', function() {
+        const q = getFormData();
+        if (!q) return;
+        if (!pendingQuestionsBySubject[q.subject_id]) pendingQuestionsBySubject[q.subject_id] = [];
+        pendingQuestionsBySubject[q.subject_id].push(q);
+        renderRecentlyAddedQuestions();
+        // Optionally, reset form fields here
+        showToast('Question added to pending successfully!');
+    });
+
+    function saveAllQuestions(subjectId) {
+        const questions = pendingQuestionsBySubject[subjectId];
+        if (!questions || !questions.length) return;
+        fetch('/questions/bulk_add/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ subject_id: subjectId, questions })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Questions saved successfully!');
+                pendingQuestionsBySubject[subjectId] = [];
+                renderRecentlyAddedQuestions();
+                // Optionally, reload the page or update the backend-rendered list
+            } else {
+                alert(data.message || 'Error saving questions.');
+            }
+        })
+        .catch(err => {
+            alert('Error saving questions.');
+            console.error(err);
+        });
+    }
+
+    // Function to save suggested general topic
+    document.getElementById('saveSuggestedGeneralTopicBtn').addEventListener('click', function() {
+        const generalTopicSelect = document.getElementById('general_topic');
+        const subjectSelect = document.getElementById('subject');
+        const suggestedTopic = generalTopicSelect.options[generalTopicSelect.selectedIndex].text;
+        
+        if (!subjectSelect.value) {
+            showToast('Please select a subject first', true);
+            return;
+        }
+
+        // Check if option already exists
+        const existingOption = Array.from(generalTopicSelect.options).find(option => 
+            option.text === suggestedTopic && option.hasAttribute('data-saved')
+        );
+
+        if (existingOption) {
+            // If option exists, just select it and hide the save button
+            generalTopicSelect.value = existingOption.value;
+            this.style.display = 'none';
+            showToast('General topic already exists');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', suggestedTopic);
+        formData.append('subject_id', subjectSelect.value);
+
+        fetch('{% url "add_general_topic" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the temporary option
+                const tempOption = generalTopicSelect.options[generalTopicSelect.selectedIndex];
+                if (tempOption && tempOption.hasAttribute('data-suggested')) {
+                    generalTopicSelect.removeChild(tempOption);
+                }
+
+                // Add new saved option
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                option.setAttribute('data-saved', 'true');
+                generalTopicSelect.appendChild(option);
+                generalTopicSelect.value = data.id;
+                
+                // Hide the save button
+                this.style.display = 'none';
+                
+                showToast('General topic saved successfully');
+            } else {
+                showToast(data.error || 'Error saving general topic', true);
+            }
+        })
+        .catch(error => {
+            showToast('Error saving general topic', true);
+            console.error('Error:', error);
+        });
+    });
+
+    // Function to save suggested subtopic
+    document.getElementById('saveSuggestedSubtopicBtn').addEventListener('click', function() {
+        const subtopicSelect = document.getElementById('subtopic');
+        const generalTopicSelect = document.getElementById('general_topic');
+        const suggestedSubtopic = subtopicSelect.options[subtopicSelect.selectedIndex].text;
+        
+        if (!generalTopicSelect.value) {
+            showToast('Please select a general topic first', true);
+            return;
+        }
+
+        // Check if option already exists
+        const existingOption = Array.from(subtopicSelect.options).find(option => 
+            option.text === suggestedSubtopic && option.hasAttribute('data-saved')
+        );
+
+        if (existingOption) {
+            // If option exists, just select it and hide the save button
+            subtopicSelect.value = existingOption.value;
+            this.style.display = 'none';
+            showToast('Subtopic already exists');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', suggestedSubtopic);
+        formData.append('general_topic_id', generalTopicSelect.value);
+
+        fetch('{% url "add_subtopic" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the temporary option
+                const tempOption = subtopicSelect.options[subtopicSelect.selectedIndex];
+                if (tempOption && tempOption.hasAttribute('data-suggested')) {
+                    subtopicSelect.removeChild(tempOption);
+                }
+
+                // Add new saved option
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                option.setAttribute('data-saved', 'true');
+                subtopicSelect.appendChild(option);
+                subtopicSelect.value = data.id;
+                
+                // Hide the save button
+                this.style.display = 'none';
+                
+                showToast('Subtopic saved successfully');
+            } else {
+                showToast(data.error || 'Error saving subtopic', true);
+            }
+        })
+        .catch(error => {
+            showToast('Error saving subtopic', true);
+            console.error('Error:', error);
+        });
+    });
+
+    // Initial render
+    renderRecentlyAddedQuestions();
+
+    // Handle topic suggestions
+    document.getElementById('suggestTopicsBtn').addEventListener('click', async function() {
+        const questionText = document.getElementById('id_question_text').value;
+        if (!questionText) {
+            showToast('Please enter a question first', true);
+            return;
+        }
+
+        // Show loading state
+        const button = this;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+
+        try {
+            // Get question type and choices if it's a multiple choice question
+            const questionType = document.getElementById('id_question_type').value;
+            let choices = [];
+
+            if (questionType === 'multiple_choice') {
+                const choicesList = document.getElementById('choicesList');
+                const choiceItems = choicesList.querySelectorAll('.list-group-item');
+                choices = Array.from(choiceItems).map((item, index) => {
+                    const label = item.querySelector('label');
+                    const badge = item.querySelector('.badge');
+                    return label.textContent.replace(badge.textContent, '').trim();
+                });
+            }
+
+            // Prepare the prompt for topic analysis
+            const topicPrompt = `Given the following question, analyze and provide appropriate topic and subtopic:
+
+Question: ${questionText}
+
+Please respond in JSON format with these fields:
+{
+    "general_topic": "suggested general topic",
+    "subtopic": "suggested subtopic"
+}`;
+
+            // Call Ollama API for topic generation using Mistral
+            const topicResponse = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'mistral',
+                    prompt: topicPrompt,
+                    stream: false,
+                    options: {
+                        temperature: 0.3,
+                        top_p: 0.9,
+                        top_k: 40,
+                        num_ctx: 4096,
+                        num_thread: 4,
+                        num_gpu: 1
+                    }
+                }),
+                signal: AbortSignal.timeout(600000) // 10 minutes timeout
+            });
+
+            if (!topicResponse.ok) {
+                if (topicResponse.status === 408) {
+                    throw new Error('Request timed out. The model is taking too long to generate a response.');
+                }
+                throw new Error(`Failed to analyze topics: ${topicResponse.statusText}`);
+            }
+
+            const topicData = await topicResponse.json();
+            let topicResult;
+            try {
+                topicResult = JSON.parse(topicData.response);
+            } catch (error) {
+                const jsonMatch = topicData.response.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    topicResult = JSON.parse(jsonMatch[0]);
+            } else {
+                    throw new Error('Invalid response format from Mistral');
+                }
+            }
+
+            // Prepare the prompt for answer analysis
+            const answerPrompt = `Given the following question and choices (if any), analyze and provide the correct answer:
+
+Question: ${questionText}
+${choices.length > 0 ? `Choices:\n${choices.map((c, i) => `${String.fromCharCode(65 + i)}. ${c}`).join('\n')}` : ''}
+
+For the answer:
+- If multiple choice: Select the exact choice that is correct. For math questions, ensure the answer matches the exact numerical value or expression.
+- If true/false: Answer with exactly "true" or "false"
+- If short answer/essay: Provide a concise, accurate answer. For math questions, give the exact numerical answer or simplified expression.
+
+For math questions specifically:
+- Use exact numerical values (e.g., "2" not "two")
+- Keep fractions in simplest form
+- Use proper mathematical notation
+- Round to appropriate decimal places if needed
+- Include units if specified in the question
+
+Please respond in JSON format with these fields:
+{
+    "correct_answer": "suggested correct answer (must match exactly with one of the choices if multiple choice)"
+}`;
+
+            // Call Ollama API for answer generation using Llama3
+            const answerResponse = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'llama3',
+                    prompt: answerPrompt,
+                    stream: false,
+                    options: {
+                        temperature: 0.1,
+                        top_p: 0.9,
+                        top_k: 20,
+                        repeat_penalty: 1.1,
+                        stop: ["\n\n", "```"],
+                        num_ctx: 4096,
+                        num_thread: 4,
+                        num_gpu: 1
+                    }
+                }),
+                signal: AbortSignal.timeout(600000) // 10 minutes timeout
+            });
+
+            if (!answerResponse.ok) {
+                if (answerResponse.status === 408) {
+                    throw new Error('Request timed out. The model is taking too long to generate a response.');
+                }
+                throw new Error(`Failed to analyze answer: ${answerResponse.statusText}`);
+            }
+
+            const answerData = await answerResponse.json();
+            let answerResult;
+            try {
+                answerResult = JSON.parse(answerData.response);
+            } catch (error) {
+                const jsonMatch = answerData.response.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    answerResult = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error('Invalid response format from Llama3');
+                }
+            }
+
+            // Combine results
+            const result = {
+                general_topic: topicResult.general_topic,
+                subtopic: topicResult.subtopic,
+                correct_answer: answerResult.correct_answer,
+                explanation: answerResult.explanation
+            };
+
+            // Display and apply general topic suggestion
+            const generalTopicSelect = document.getElementById('general_topic');
+            const generalTopicOption = document.createElement('option');
+            generalTopicOption.value = result.general_topic;
+            generalTopicOption.textContent = result.general_topic;
+            generalTopicSelect.appendChild(generalTopicOption);
+            generalTopicSelect.value = result.general_topic;
+            generalTopicSelect.dispatchEvent(new Event('change'));
+
+            // Show save button for general topic
+            const saveGeneralTopicBtn = document.getElementById('saveSuggestedGeneralTopicBtn');
+            saveGeneralTopicBtn.style.display = 'inline-block';
+            saveGeneralTopicBtn.title = `Save "${result.general_topic}" as general topic`;
+
+            // Display and apply subtopic suggestion
+            const subtopicSelect = document.getElementById('subtopic');
+            const subtopicOption = document.createElement('option');
+            subtopicOption.value = result.subtopic;
+            subtopicOption.textContent = result.subtopic;
+            subtopicSelect.appendChild(subtopicOption);
+            subtopicSelect.value = result.subtopic;
+
+            // Show save button for subtopic
+            const saveSubtopicBtn = document.getElementById('saveSuggestedSubtopicBtn');
+            saveSubtopicBtn.style.display = 'inline-block';
+            saveSubtopicBtn.title = `Save "${result.subtopic}" as subtopic`;
+
+            // Display the generated answer in the label
+            const answerLabel = document.getElementById('generatedAnswerLabel');
+            const answerText = document.getElementById('generatedAnswerText');
+            answerText.textContent = result.correct_answer;
+            answerLabel.style.display = 'inline-block';
+
+            // Show the suggestions in a toast message
+            showToast(`Generated suggestions:
+                General Topic: ${result.general_topic}
+                Subtopic: ${result.subtopic}
+                Correct Answer: ${result.correct_answer}
+                Explanation: ${result.explanation}`);
+
+            // Apply the correct answer based on question type
+            if (questionType === 'multiple_choice') {
+                const choicesList = document.getElementById('choicesList');
+                const choiceItems = choicesList.querySelectorAll('.list-group-item');
+                
+                // Get all existing choices
+                const existingChoices = Array.from(choiceItems).map((item, index) => {
+                    const label = item.querySelector('label');
+                    const badge = item.querySelector('.badge');
+                    return {
+                        text: label.textContent.replace(badge.textContent, '').trim(),
+                        index: index,
+                        element: item
+                    };
+                });
+
+                // Find exact match first
+                const exactMatch = existingChoices.find(choice => 
+                    choice.text.toLowerCase() === result.correct_answer.toLowerCase()
+                );
+
+                if (exactMatch) {
+                    const radio = exactMatch.element.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        // Update the correct choice select
+                        const correctChoiceSelect = document.getElementById('id_correct_choice');
+                        if (correctChoiceSelect) {
+                            correctChoiceSelect.value = exactMatch.index;
+                        }
+                        showToast(`Selected matching choice: ${exactMatch.text}`);
+                    }
+                } else {
+                    showToast('No matching choice found for the suggested answer', true);
+                }
+            } else if (questionType === 'true_false') {
+                const trueFalseAnswer = document.getElementById('id_true_false_answer');
+                // Ensure answer is exactly "true" or "false"
+                const normalizedAnswer = result.correct_answer.toLowerCase().trim();
+                if (normalizedAnswer === 'true' || normalizedAnswer === 'false') {
+                    trueFalseAnswer.value = normalizedAnswer;
+                    trueFalseAnswer.dispatchEvent(new Event('change'));
+                } else {
+                    showToast('Invalid true/false answer format', true);
+                }
+            } else if (questionType === 'short_answer' || questionType === 'essay') {
+                const essayAnswer = document.getElementById('id_essay_answer');
+                essayAnswer.value = result.correct_answer;
+                essayAnswer.dispatchEvent(new Event('change'));
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('An error occurred while analyzing the question', true);
+        } finally {
+            // Reset button state
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    });
+
+    // Handle applying suggestions
+    document.getElementById('applySuggestionsBtn').addEventListener('click', function() {
+        const generalTopic = document.getElementById('suggestedGeneralTopic').textContent;
+        const subtopic = document.getElementById('suggestedSubtopic').textContent;
+        const suggestedAnswer = document.getElementById('suggestionsModal').dataset.suggestedAnswer;
+        
+        // Find and select the general topic
+        const generalTopicSelect = document.getElementById('general_topic');
+        for (let option of generalTopicSelect.options) {
+            if (option.text === generalTopic) {
+                generalTopicSelect.value = option.value;
+                generalTopicSelect.dispatchEvent(new Event('change'));
+                break;
+            }
+        }
+        
+        // Find and select the subtopic
+        const subtopicSelect = document.getElementById('subtopic');
+        for (let option of subtopicSelect.options) {
+            if (option.text === subtopic) {
+                subtopicSelect.value = option.value;
+                break;
+            }
+        }
+
+        // Apply the suggested answer based on question type
+        const questionType = document.getElementById('id_question_type').value;
+        if (questionType === 'multiple_choice') {
+            const choicesList = document.getElementById('choicesList');
+            const choiceItems = choicesList.querySelectorAll('.list-group-item');
+            choiceItems.forEach((item, index) => {
+                const label = item.querySelector('label');
+                const badge = item.querySelector('.badge');
+                const choiceText = label.textContent.replace(badge.textContent, '').trim();
+                if (choiceText === suggestedAnswer) {
+                    const radio = item.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                }
+            });
+        } else if (questionType === 'true_false') {
+            document.getElementById('id_true_false_answer').value = suggestedAnswer.toLowerCase();
+        } else if (questionType === 'short_answer' || questionType === 'essay') {
+            document.getElementById('id_essay_answer').value = suggestedAnswer;
+        }
+        
+        // Close the modal
+        bootstrap.Modal.getInstance(document.getElementById('suggestionsModal')).hide();
+        showToast('Suggestions applied successfully');
+    });
+
+    // Add modal HTML before the closing </body> tag
+    const modalHtml = `
+    <div class="modal fade" id="suggestionsModal" tabindex="-1" aria-labelledby="suggestionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="suggestionsModalLabel">Question Analysis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6>Suggested General Topic:</h6>
+                        <p id="suggestedGeneralTopic" class="text-primary"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Suggested Subtopic:</h6>
+                        <p id="suggestedSubtopic" class="text-primary"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Suggested Correct Answer:</h6>
+                        <p id="suggestedAnswer" class="text-success"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Explanation:</h6>
+                        <p id="suggestionExplanation" class="text-muted"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="applySuggestionsBtn">Apply Suggestions</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    // Add modal to the page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    async function analyzeQuestion() {
+        const questionText = document.getElementById('question_text').value;
+        const choices = Array.from(document.querySelectorAll('.choice-input')).map(input => input.value);
+        
+        if (!questionText) {
+            alert('Please enter a question');
+            return;
+        }
+
+        // Show spinner
+        document.getElementById('spinner').style.display = 'flex';
+
+        try {
+            // Prepare the prompt for topic analysis
+            const topicPrompt = `Analyze this question and suggest appropriate general topic and subtopic:
+    ${questionText}
+    ${choices.length > 0 ? `Choices:\n${choices.map((c, i) => `${String.fromCharCode(65 + i)}. ${c}`).join('\n')}` : ''}
+
+    Return a JSON object with these fields:
+    - suggested_general_topic: Suggested general topic name
+    - suggested_subtopic: Suggested subtopic name
+    - explanation: Brief explanation of the topic suggestions`;
+
+            // Call Ollama API for topic generation using Mistral
+            const topicResponse = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'mistral',
+                    prompt: topicPrompt,
+                    stream: false,
+                    options: {
+                        temperature: 0.3,
+                        top_p: 0.9,
+                        top_k: 40,
+                        num_ctx: 4096,
+                        num_thread: 4,
+                        num_gpu: 1
+                    }
+                }),
+                signal: AbortSignal.timeout(600000) // 10 minutes timeout
+            });
+
+            if (!topicResponse.ok) {
+                if (topicResponse.status === 408) {
+                    throw new Error('Request timed out. The model is taking too long to generate a response.');
+                }
+                throw new Error(`Failed to analyze topics: ${topicResponse.statusText}`);
+            }
+
+            const topicData = await topicResponse.json();
+            let topicResult;
+            try {
+                topicResult = JSON.parse(topicData.response);
+            } catch (error) {
+                const jsonMatch = topicData.response.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    topicResult = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error('Invalid response format from Mistral');
+                }
+            }
+
+            // Update the UI with the suggested topics
+            document.getElementById('suggested_general_topic').textContent = topicResult.suggested_general_topic || 'No suggestion';
+            document.getElementById('suggested_subtopic').textContent = topicResult.suggested_subtopic || 'No suggestion';
+            document.getElementById('topic_explanation').textContent = topicResult.explanation || 'No explanation provided';
+
+            // Show the suggestions container
+            document.getElementById('suggestions-container').style.display = 'block';
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error analyzing question: ' + error.message);
+        } finally {
+            // Hide spinner
+            document.getElementById('spinner').style.display = 'none';
+        }
+    }
+
+    // Show save button for general topic when a new value is selected
+    document.getElementById('general_topic').addEventListener('change', function() {
+        const saveGeneralTopicBtn = document.getElementById('saveSuggestedGeneralTopicBtn');
+        const selectedOption = this.options[this.selectedIndex];
+        const placeholderText = 'Select a general topic';
+        
+        if (this.value && 
+            selectedOption && 
+            !selectedOption.hasAttribute('data-saved') && 
+            selectedOption.text !== placeholderText &&
+            !selectedOption.text.includes(placeholderText) &&
+            saveGeneralTopicBtn.dataset.showAfterUse === 'true') {
+            saveGeneralTopicBtn.style.display = 'inline-block';
+        } else {
+            saveGeneralTopicBtn.style.display = 'none';
+        }
+    });
+
+    // Show save button for subtopic when a new value is selected
+    document.getElementById('subtopic').addEventListener('change', function() {
+        const saveSubtopicBtn = document.getElementById('saveSuggestedSubtopicBtn');
+        const selectedOption = this.options[this.selectedIndex];
+        const placeholderText = 'Select a subtopic';
+        const generalTopicSelect = document.getElementById('general_topic');
+        const generalTopicValue = generalTopicSelect.value;
+        
+        if (this.value && 
+            selectedOption && 
+            !selectedOption.hasAttribute('data-saved') && 
+            selectedOption.text !== placeholderText &&
+            !selectedOption.text.includes(placeholderText) &&
+            generalTopicValue &&
+            saveSubtopicBtn.dataset.showAfterUse === 'true') {
+            saveSubtopicBtn.style.display = 'inline-block';
+        } else {
+            saveSubtopicBtn.style.display = 'none';
+        }
+    });
+
+    // Also hide save button when general topic changes
+    document.getElementById('general_topic').addEventListener('change', function() {
+        const saveSubtopicBtn = document.getElementById('saveSuggestedSubtopicBtn');
+        if (!this.value || saveSubtopicBtn.dataset.showAfterUse !== 'true') {
+            saveSubtopicBtn.style.display = 'none';
+        }
+    });
+
+    // Initialize save buttons as hidden
+    document.addEventListener('DOMContentLoaded', function() {
+        const saveGeneralTopicBtn = document.getElementById('saveSuggestedGeneralTopicBtn');
+        const saveSubtopicBtn = document.getElementById('saveSuggestedSubtopicBtn');
+        if (saveGeneralTopicBtn) {
+            saveGeneralTopicBtn.style.display = 'none';
+            saveGeneralTopicBtn.dataset.showAfterUse = 'false';
+        }
+        if (saveSubtopicBtn) {
+            saveSubtopicBtn.style.display = 'none';
+            saveSubtopicBtn.dataset.showAfterUse = 'false';
+        }
+    });
+
+    // Function to refresh subtopics
+    async function refreshSubtopics(generalTopicId) {
+        const subtopicSelect = document.getElementById('subtopic');
+        subtopicSelect.innerHTML = '<option value="">Select a subtopic</option>';
+        
+        if (generalTopicId) {
+            try {
+                const response = await fetch(`/general-topic/${generalTopicId}/subtopics/`);
+                const data = await response.json();
+                
+                if (Array.isArray(data)) {
+                    data.forEach(subtopic => {
+                        const option = document.createElement('option');
+                        option.value = subtopic.id;
+                        option.textContent = subtopic.name;
+                        option.setAttribute('data-saved', 'true');
+                        subtopicSelect.appendChild(option);
+                    });
+                } else {
+                    showToast('Error loading subtopics', true);
+                }
+            } catch (error) {
+                showToast('Error loading subtopics', true);
+                console.error('Error:', error);
+            }
+        }
+    }
+
+    // Check if we're editing a question and have stored choices
+    const questionId = '{{ question.id }}';
+    console.log('Checking for stored choices for question:', questionId);
+    
+    if (questionId) {
+        const storedChoices = sessionStorage.getItem(`question_${questionId}_choices`);
+        console.log('Stored choices:', storedChoices);
+        
+        if (storedChoices) {
+            // Clear existing choices
+            const choicesList = document.getElementById('choicesList');
+            if (choicesList) {
+                choicesList.innerHTML = '';
+                choiceCount = 0; // Reset choice count
+                
+                // Parse and add stored choices
+                const choices = storedChoices.split(',');
+                console.log('Parsed choices:', choices);
+                
+                choices.forEach((choice, index) => {
+                    const [text, isCorrect] = choice.split('|');
+                    console.log('Processing choice:', { text, isCorrect, index });
+                    
+                    // Create choice item
+                    const choiceItem = document.createElement('div');
+                    choiceItem.className = 'list-group-item';
+                    choiceItem.innerHTML = `
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="correct_choice" value="${index}" id="choice${index}">
+                            <label class="form-check-label" for="choice${index}">
+                                <span class="badge bg-primary me-2">${String.fromCharCode(65 + index)}</span>${text}
+                            </label>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-choice">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    // Add to choices list
+                    choicesList.appendChild(choiceItem);
+                    choiceCount++;
+                    
+                    // Set correct choice
+                    if (isCorrect === 'True') {
+                        const radio = choiceItem.querySelector('input[type="radio"]');
+                        if (radio) {
+                            radio.checked = true;
+                            // Also update the correct choice select
+                            const correctChoiceSelect = document.getElementById('id_correct_choice');
+                            if (correctChoiceSelect) {
+                                correctChoiceSelect.value = index;
+                            }
+                        }
+                    }
+                    
+                    // Add remove button functionality
+                    const removeBtn = choiceItem.querySelector('.remove-choice');
+                    removeBtn.addEventListener('click', function() {
+                        choiceItem.remove();
+                        choiceCount--;
+                        updateChoiceNumbers();
+                    });
+                });
+                
+                // Update correct choice select
+                updateCorrectChoiceSelect();
+                
+                // Clear stored choices
+                sessionStorage.removeItem(`question_${questionId}_choices`);
+            }
+        }
+    }
+});
+</script>
+
+<!-- JSON data for subjects -->
+{{ subjects_list|json_script:"subjects-data" }}
+{% endblock %}

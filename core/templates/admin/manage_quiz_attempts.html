@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Quiz Attempts{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-height: 100vh; overflow-y: auto;">
+    <!-- Header Section -->
+    <div class="row mb-4 sticky-top bg-white py-3" style="z-index: 1030;">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Manage Quiz Attempts</h2>
+                    <p class="text-muted mb-0">Modify and monitor student quiz progress</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modify Quiz Progress Section -->
+    <div class="card mb-4 fade-in">
+        <div class="card-header bg-transparent">
+            <h4 class="card-title mb-0">
+                <i class="fas fa-edit me-2"></i>Modify Quiz Progress
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="student_id" class="form-label">Student</label>
+                            <select class="form-select" id="student_id" name="student_id" required>
+                                <option value="">Select Student</option>
+                                {% for student in students %}
+                                <option value="{{ student.id }}">{{ student.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="subject_id" class="form-label">Subject</label>
+                            <select class="form-select" id="subject_id" name="subject_id" required>
+                                <option value="">Select Subject</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="action" class="form-label">Action</label>
+                            <select class="form-select" id="action" name="action" required>
+                                <option value="">Select Action</option>
+                                <option value="reset">Reset Progress</option>
+                                <option value="modify">Modify Progress</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modifyFields" style="display: none;" class="mt-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="new_level" class="form-label">New Level</label>
+                                <input type="number" class="form-control" id="new_level" name="new_level" min="1">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="new_attempts" class="form-label">New Attempts</label>
+                                <input type="number" class="form-control" id="new_attempts" name="new_attempts" min="0">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="new_score" class="form-label">New Highest Score</label>
+                                <input type="number" class="form-control" id="new_score" name="new_score" min="0" max="100" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Submit Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Current Quiz Progress Section -->
+    <div class="card fade-in">
+        <div class="card-header bg-transparent">
+            <h4 class="card-title mb-3">
+                <i class="fas fa-chart-line me-2"></i>Current Quiz Progress
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="filter-section mb-3">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search...">
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="completed">Completed</option>
+                            <option value="in-progress">In Progress</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Level</th>
+                                <th>Total Attempts</th>
+                                <th>Highest Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quiz_level in quiz_levels %}
+                            <tr>
+                                <td>{{ quiz_level.student.username }}</td>
+                                <td>{{ quiz_level.subject.name }}</td>
+                                <td>{{ quiz_level.level }}</td>
+                                <td>{{ quiz_level.total_attempts }}</td>
+                                <td>
+                                    <div class="progress progress-bar-custom">
+                                        <div class="progress-bar {% if quiz_level.highest_score >= 70 %}bg-success{% elif quiz_level.highest_score >= 40 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ quiz_level.highest_score }}%"
+                                             aria-valuenow="{{ quiz_level.highest_score }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ quiz_level.highest_score }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if quiz_level.is_completed %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">In Progress</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary quick-modify" 
+                                            data-student="{{ quiz_level.student.id }}"
+                                            data-subject="{{ quiz_level.subject.id }}"
+                                            data-level="{{ quiz_level.level }}"
+                                            data-attempts="{{ quiz_level.total_attempts }}"
+                                            data-score="{{ quiz_level.highest_score }}"
+                                            title="Quick Modify">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger quick-reset"
+                                            data-student="{{ quiz_level.student.id }}"
+                                            data-subject="{{ quiz_level.subject.id }}"
+                                            title="Reset Progress">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No quiz progress data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Modify Modal -->
+<div class="modal fade" id="quickModifyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quick Modify Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickModifyForm">
+                    <input type="hidden" name="student_id" id="modal_student_id">
+                    <input type="hidden" name="subject_id" id="modal_subject_id">
+                    <div class="mb-3">
+                        <label class="form-label">Level</label>
+                        <input type="number" class="form-control" name="new_level" id="modal_level" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Attempts</label>
+                        <input type="number" class="form-control" name="new_attempts" id="modal_attempts" min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Highest Score (%)</label>
+                        <input type="number" class="form-control" name="new_score" id="modal_score" min="0" max="100" step="0.1">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveQuickModify">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-bar-custom {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.progress-bar-custom .progress-bar {
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.form-select, .form-control {
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.filter-section {
+    position: relative;
+    z-index: 1050;
+}
+
+.table-container {
+    position: relative;
+    z-index: 1;
+}
+
+.form-select, .form-control {
+    position: relative;
+    z-index: 1050;
+}
+
+.table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: white;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 2;
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide modify fields based on action selection
+    document.getElementById('action').addEventListener('change', function() {
+        const modifyFields = document.getElementById('modifyFields');
+        modifyFields.style.display = this.value === 'modify' ? 'block' : 'none';
+    });
+
+    // Quick modify functionality
+    const quickModifyModal = new bootstrap.Modal(document.getElementById('quickModifyModal'));
+    const quickModifyButtons = document.querySelectorAll('.quick-modify');
+    const quickResetButtons = document.querySelectorAll('.quick-reset');
+
+    quickModifyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('modal_student_id').value = this.dataset.student;
+            document.getElementById('modal_subject_id').value = this.dataset.subject;
+            document.getElementById('modal_level').value = this.dataset.level;
+            document.getElementById('modal_attempts').value = this.dataset.attempts;
+            document.getElementById('modal_score').value = this.dataset.score;
+            quickModifyModal.show();
+        });
+    });
+
+    // Save quick modify changes
+    document.getElementById('saveQuickModify').addEventListener('click', function() {
+        const form = document.getElementById('quickModifyForm');
+        const formData = new FormData(form);
+        formData.append('action', 'modify');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        }).then(() => {
+            location.reload();
+        });
+    });
+
+    // Quick reset functionality
+    quickResetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset this student\'s progress?')) {
+                const formData = new FormData();
+                formData.append('student_id', this.dataset.student);
+                formData.append('subject_id', this.dataset.subject);
+                formData.append('action', 'reset');
+                
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        });
+    });
+
+    // Search and filter functionality
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const tableRows = document.querySelectorAll('tbody tr');
+
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const status = row.querySelector('.badge').textContent.toLowerCase();
+            const matchesSearch = text.includes(searchTerm);
+            const matchesStatus = !statusValue || status.includes(statusValue);
+            row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+    });
+</script>
+{% endblock %}
+{% endblock %} 

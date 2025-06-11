@@ -1,0 +1,893 @@
+[
+  {
+    "id": 2,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "Am I saved?",
+    "question_type": "true_false",
+    "points": 100,
+    "created_at": "2025-03-30T13:38:51.275880+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 3,
+    "subtopic": "gacsdjhasdxgguacgyuasdcg",
+    "question_text": "ANO?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-03-30T14:24:39.004083+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "a",
+        "is_correct": false
+      },
+      {
+        "text": "b",
+        "is_correct": false
+      },
+      {
+        "text": "c",
+        "is_correct": false
+      },
+      {
+        "text": "d",
+        "is_correct": true
+      }
+    ],
+    "correct_answer": "d"
+  },
+  {
+    "id": 4,
+    "subtopic": "commqaad",
+    "question_text": "hehe",
+    "question_type": "true_false",
+    "points": 3,
+    "created_at": "2025-03-30T18:31:00.892400+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 5,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "zvhjagdvjahvd",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T15:40:03.121386+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 6,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "sahjdvsa",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T15:44:27.290467+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 7,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "Zcagjxhvasgvahms",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T15:45:06.079238+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "False"
+  },
+  {
+    "id": 8,
+    "subtopic": "commqaad",
+    "question_text": "po",
+    "question_type": "true_false",
+    "points": 5,
+    "created_at": "2025-03-31T15:46:10.740409+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 9,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "asdasd",
+    "question_type": "true_false",
+    "points": 3,
+    "created_at": "2025-03-31T16:28:59.392005+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 10,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "hasvchas",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T16:32:22.738056+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 11,
+    "subtopic": "gacsdjhasdxgguacgyuasdcg",
+    "question_text": "mavscajskdvsadv",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T16:34:16.218869+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 12,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "asdchagcd",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T16:51:07.550786+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 13,
+    "subtopic": "commqaad",
+    "question_text": "asd",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T17:34:45.328711+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 14,
+    "subtopic": "gacsdjhasdxgguacgyuasdcg",
+    "question_text": "svcjhacvda",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T17:36:51.546882+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 15,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "vscjhavsdjhd",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T17:38:27.993859+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 16,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "ALMANAK",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-03-31T17:58:07.966302+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "False"
+  },
+  {
+    "id": 17,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "Admin",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T13:31:51.083842+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 18,
+    "subtopic": "gacsdjhasdxgguacgyuasdcg",
+    "question_text": "asksdamdsams",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T13:34:50.559432+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 19,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "VDSAHJASDKJAD",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T15:29:48.933575+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "False"
+  },
+  {
+    "id": 20,
+    "subtopic": "gacsdjhasdxgguacgyuasdcg",
+    "question_text": "ASDVJHVASDU",
+    "question_type": "true_false",
+    "points": 11,
+    "created_at": "2025-04-02T15:30:55.347521+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 21,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "CAGHDCHGADSFASD",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T15:34:05.015854+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 22,
+    "subtopic": "BERU",
+    "question_text": "HUHa",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T15:43:45.169974+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 23,
+    "subtopic": "commqaad",
+    "question_text": "asdcghcasdf",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T15:54:51.679249+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 24,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "asd",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T15:55:52.173458+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 25,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "asd",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-02T15:59:50.454989+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 26,
+    "subtopic": "FXASXYT",
+    "question_text": "asdvjgauds",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-03T14:01:34.306652+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 27,
+    "subtopic": "gacsdjhasdxgguacgyuasdcg",
+    "question_text": "asvdhjvasds",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-03T14:02:09.432974+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "asdvgasd",
+        "is_correct": true
+      },
+      {
+        "text": "asdvhasd",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "asdvgasd"
+  },
+  {
+    "id": 28,
+    "subtopic": "BERU",
+    "question_text": "ano ito?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-03T14:23:46.966234+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "huh?",
+        "is_correct": true
+      },
+      {
+        "text": "hoh?",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "huh?"
+  },
+  {
+    "id": 29,
+    "subtopic": "Discrete",
+    "question_text": "1+1 = 3?",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-03T14:42:07.449699+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "False"
+  },
+  {
+    "id": 30,
+    "subtopic": "Discrete",
+    "question_text": "1+1?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-03T15:00:30.002467+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "2",
+        "is_correct": true
+      },
+      {
+        "text": "3",
+        "is_correct": false
+      },
+      {
+        "text": "1",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "2"
+  },
+  {
+    "id": 31,
+    "subtopic": "Malalsm",
+    "question_text": "what us the mamal?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-03T15:26:51.492215+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "aha",
+        "is_correct": false
+      },
+      {
+        "text": "ahu",
+        "is_correct": false
+      },
+      {
+        "text": "ehe",
+        "is_correct": true
+      }
+    ],
+    "correct_answer": "ehe"
+  },
+  {
+    "id": 32,
+    "subtopic": "FXASXYT",
+    "question_text": "asdas",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-03T15:53:53.802093+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "asd",
+        "is_correct": true
+      },
+      {
+        "text": "asdas",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "asd"
+  },
+  {
+    "id": 33,
+    "subtopic": "asdhvhjvasd",
+    "question_text": "SXasd",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-03T16:05:21.742702+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "sndlksadn",
+        "is_correct": true
+      },
+      {
+        "text": "sjbdkjabds",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "sndlksadn"
+  },
+  {
+    "id": 34,
+    "subtopic": "Order of Operations (PEMDAS)",
+    "question_text": "What is the value of 5 + 7 × 2?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-06T13:10:35.211118+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "24",
+        "is_correct": false
+      },
+      {
+        "text": "19",
+        "is_correct": true
+      },
+      {
+        "text": "26",
+        "is_correct": false
+      },
+      {
+        "text": "33",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "19"
+  },
+  {
+    "id": 35,
+    "subtopic": "Linear Equations",
+    "question_text": "Solve for x: 3x + 5 = 20",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-06T13:11:49.398056+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "3",
+        "is_correct": false
+      },
+      {
+        "text": "5",
+        "is_correct": false
+      },
+      {
+        "text": "7",
+        "is_correct": true
+      },
+      {
+        "text": "25",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "7"
+  },
+  {
+    "id": 36,
+    "subtopic": "Area of Plane Figures",
+    "question_text": "What is the area of a triangle with base 6 cm and height 8 cm?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-06T13:13:23.530637+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "24 cm²",
+        "is_correct": true
+      },
+      {
+        "text": "48 cm²",
+        "is_correct": false
+      },
+      {
+        "text": "28 cm²",
+        "is_correct": false
+      },
+      {
+        "text": "36 cm²",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "24 cm²"
+  },
+  {
+    "id": 37,
+    "subtopic": "Coordinate Geometry",
+    "question_text": "What is the slope of the line passing through (2, 3) and (4, 7)?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-06T13:14:40.165650+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "2",
+        "is_correct": true
+      },
+      {
+        "text": "1",
+        "is_correct": false
+      },
+      {
+        "text": "4",
+        "is_correct": false
+      },
+      {
+        "text": "3",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "2"
+  },
+  {
+    "id": 38,
+    "subtopic": "Fractions and Decimals",
+    "question_text": "Convert 0.75 to a fraction.",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-06T13:17:01.027825+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "3/4",
+        "is_correct": true
+      },
+      {
+        "text": "1/2",
+        "is_correct": false
+      },
+      {
+        "text": "2/3",
+        "is_correct": false
+      },
+      {
+        "text": "1/4",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "3/4"
+  },
+  {
+    "id": 39,
+    "subtopic": "Circles",
+    "question_text": "What is the circumference of a circle with radius 4 cm? (Use π ≈ 3.14)",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-06T13:18:07.893450+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "12.56 cm",
+        "is_correct": false
+      },
+      {
+        "text": "25.12 cm",
+        "is_correct": true
+      },
+      {
+        "text": "16.00 cm",
+        "is_correct": false
+      },
+      {
+        "text": "8.00 cm",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "25.12 cm"
+  },
+  {
+    "id": 40,
+    "subtopic": "Order of Operations (PEMDAS)",
+    "question_text": "1+1-1 = 0?",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-07T16:21:19.861668+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "False"
+  },
+  {
+    "id": 41,
+    "subtopic": "Additon",
+    "question_text": "2+1 = 3?",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-07T16:24:17.100196+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 42,
+    "subtopic": "PANANLIKSIK",
+    "question_text": "ANO ANG WIKANG PAMBANSA ?",
+    "question_type": "multiple_choice",
+    "points": 5,
+    "created_at": "2025-04-08T07:35:51.957688+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "WIKA",
+        "is_correct": false
+      },
+      {
+        "text": "PAMBANSA",
+        "is_correct": false
+      },
+      {
+        "text": "SALITA NG MGA FILIPINO",
+        "is_correct": true
+      }
+    ],
+    "correct_answer": "SALITA NG MGA FILIPINO"
+  },
+  {
+    "id": 43,
+    "subtopic": "Properties of Triangles",
+    "question_text": "A triangle can have more than one right angle.",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-11T18:29:45.157479+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "False"
+  },
+  {
+    "id": 44,
+    "subtopic": "Multiplication Rules",
+    "question_text": "Multiplying any number by zero always gives zero.",
+    "question_type": "true_false",
+    "points": 1,
+    "created_at": "2025-04-11T18:30:51.961677+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "correct_answer": "True"
+  },
+  {
+    "id": 58,
+    "subtopic": "Subject-Verb Agreement",
+    "question_text": "Which sentence uses correct subject-verb agreement?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-15T03:23:07.221811+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "The list of items are on the desk.",
+        "is_correct": false
+      },
+      {
+        "text": "The players of the team runs fast.",
+        "is_correct": false
+      },
+      {
+        "text": "The bouquet of roses smells lovely.",
+        "is_correct": true
+      },
+      {
+        "text": "The books on the shelf needs dusting.",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "The bouquet of roses smells lovely."
+  },
+  {
+    "id": 59,
+    "subtopic": "Main Idea",
+    "question_text": "What is the main idea of the following passage?\r\n\r\n\"Despite the growing popularity of online learning, many students still prefer the traditional classroom setting because of face-to-face interaction and structured schedules.\"",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-04-15T03:24:55.212409+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "Online learning is better than classroom learning.",
+        "is_correct": false
+      },
+      {
+        "text": "Some students dislike technology.",
+        "is_correct": false
+      },
+      {
+        "text": "Traditional classrooms offer advantages that some students value.",
+        "is_correct": true
+      },
+      {
+        "text": "All students learn better in a classroom.",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "Traditional classrooms offer advantages that some students value."
+  },
+  {
+    "id": 83,
+    "subtopic": "Human Body Systems",
+    "question_text": "What organ is primarily responsible for pumping blood throughout the human body?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-05-01T05:31:20.566959+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "Lungs",
+        "is_correct": false
+      },
+      {
+        "text": "Brain",
+        "is_correct": false
+      },
+      {
+        "text": "Heart",
+        "is_correct": true
+      },
+      {
+        "text": "Liver",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "Heart"
+  },
+  {
+    "id": 84,
+    "subtopic": "Elements and Periodic Table",
+    "question_text": "What is the chemical symbol for gold?",
+    "question_type": "multiple_choice",
+    "points": 1,
+    "created_at": "2025-05-01T05:34:31.834340+00:00",
+    "created_by": "admin",
+    "allow_file_upload": false,
+    "max_file_size": 5,
+    "allowed_file_types": "pdf,doc,docx,txt,jpg,jpeg,png,gif",
+    "choices": [
+      {
+        "text": "Au",
+        "is_correct": true
+      },
+      {
+        "text": "Ag",
+        "is_correct": false
+      },
+      {
+        "text": "Gd",
+        "is_correct": false
+      },
+      {
+        "text": "Go",
+        "is_correct": false
+      }
+    ],
+    "correct_answer": "Au"
+  }
+]

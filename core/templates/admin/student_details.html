@@ -1,0 +1,449 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4" style="position: relative; z-index: 1;">
+    <!-- Loading Skeleton -->
+    <div id="loading-skeleton" style="position: relative; z-index: 2;" class="d-none">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="skeleton-text" style="width: 250px; height: 32px;"></div>
+                        <div class="skeleton-text" style="width: 200px; height: 20px; margin-top: 8px;"></div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <div class="skeleton-button" style="width: 180px; height: 38px;"></div>
+                        <div class="skeleton-button" style="width: 180px; height: 38px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Cards Skeleton -->
+        <div class="row mb-4">
+            {% for i in '1234'|make_list %}
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="skeleton-text" style="width: 120px; height: 20px;"></div>
+                        <div class="skeleton-text" style="width: 80px; height: 32px; margin-top: 8px;"></div>
+                        <div class="skeleton-text" style="width: 140px; height: 20px; margin-top: 16px;"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Charts Skeleton -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-transparent border-0">
+                        <div class="skeleton-text" style="width: 180px; height: 24px;"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="skeleton-chart" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-transparent border-0">
+                        <div class="skeleton-text" style="width: 180px; height: 24px;"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="skeleton-chart" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Skeleton -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-transparent border-0">
+                        <div class="skeleton-text" style="width: 200px; height: 24px;"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        {% for i in '12345'|make_list %}
+                                        <th><div class="skeleton-text" style="width: 100px; height: 20px;"></div></th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in '123'|make_list %}
+                                    <tr>
+                                        {% for j in '12345'|make_list %}
+                                        <td><div class="skeleton-text" style="width: 80px; height: 20px;"></div></td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actual Content -->
+    <div id="content" class="d-none" style="position: relative; z-index: 2;">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="fw-bold mb-1">Student Performance Details</h2>
+                        <p class="text-muted mb-0">{{ student.username }}'s performance by subject</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'change_student_credentials' student.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-edit me-2"></i>Change Credentials
+                        </a>
+                        <a href="{% url 'student_performance' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Performance Overview
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">Total Attempts</h6>
+                        <h3 class="mb-0">{{ total_responses }}</h3>
+                        <div class="mt-2">
+                            <span class="text-success">
+                                <i class="fas fa-check-circle me-1"></i>
+                                {{ correct_responses }} correct
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">Success Rate</h6>
+                        <h3 class="mb-0">{{ success_rate }}%</h3>
+                        <div class="progress mt-2" style="height: 4px;">
+                            <div class="progress-bar bg-success" style="width: {{ success_rate }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">Subjects Attempted</h6>
+                        <h3 class="mb-0">{{ subjects_attempted }}</h3>
+                        <div class="mt-2">
+                            <span class="text-primary">
+                                <i class="fas fa-book me-1"></i>
+                                Different subjects
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card fade-in">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">Average Time</h6>
+                        <h3 class="mb-0">0 min</h3>
+                        <div class="mt-2">
+                            <span class="text-info">
+                                <i class="fas fa-clock me-1"></i>
+                                Per question
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card fade-in h-100">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">Subject Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="subjectPerformanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card fade-in h-100">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">Performance Trend</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="performanceTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Performance Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card fade-in">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">Detailed Subject Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Total Attempts</th>
+                                        <th>Correct Answers</th>
+                                        <th>Success Rate</th>
+                                        <th>Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject, data in subject_performance.items %}
+                                    <tr>
+                                        <td>{{ subject }}</td>
+                                        <td>{{ data.total }}</td>
+                                        <td>{{ data.correct }}</td>
+                                        <td>{{ data.success_rate }}%</td>
+                                        <td>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar {% if data.success_rate >= 70 %}bg-success{% elif data.success_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                     style="width: {{ data.success_rate }}%">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No performance data available</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Show loading skeleton immediately
+document.getElementById('loading-skeleton').classList.remove('d-none');
+document.getElementById('content').classList.add('d-none');
+
+// Function to initialize charts
+function initializeCharts() {
+    // Subject Performance Chart
+    const subjectCtx = document.getElementById('subjectPerformanceChart').getContext('2d');
+    new Chart(subjectCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.subject_performance.labels|safe }},
+            datasets: [{
+                label: 'Success Rate',
+                data: {{ chart_data.subject_performance.data|safe }},
+                backgroundColor: {{ chart_data.subject_performance.colors|safe }},
+                borderColor: {{ chart_data.subject_performance.border_colors|safe }},
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.raw + '%';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Performance Trend Chart
+    const trendCtx = document.getElementById('performanceTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_data.performance_trend.dates|safe }},
+            datasets: [{
+                label: 'Performance',
+                data: {{ chart_data.performance_trend.scores|safe }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                fill: true,
+                backgroundColor: 'rgba(75, 192, 192, 0.1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.raw + '%';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// When the page is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts and show content
+    initializeCharts();
+    
+    // Hide loading skeleton and show content with a fade effect
+    document.getElementById('loading-skeleton').classList.add('d-none');
+    document.getElementById('content').classList.remove('d-none');
+});
+</script>
+
+<style>
+.container-fluid {
+    margin-top: 1rem;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    z-index: 1;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton Loading Styles */
+.skeleton-text {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+.skeleton-button {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 6px;
+}
+
+.skeleton-chart {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.progress {
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+canvas {
+    max-height: 300px;
+}
+
+/* Ensure content is above the header */
+#content, #loading-skeleton {
+    position: relative;
+    z-index: 2;
+}
+
+/* Add some spacing from the header */
+.py-4 {
+    padding-top: 2rem !important;
+}
+</style>
+{% endblock %} 

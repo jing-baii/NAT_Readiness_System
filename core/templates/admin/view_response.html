@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Response Details</h2>
+                    <p class="text-muted mb-0">Detailed view of student response</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'list_responses' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Responses
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Response Details -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 fade-in shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">Response Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Student</h6>
+                        <p class="mb-0">{{ response.student.username }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Question</h6>
+                        <p class="mb-0">{{ response.question.question_text }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Student's Answer</h6>
+                        <p class="mb-0">{{ response.answer }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Correct Answer</h6>
+                        <p class="mb-0">{{ response.question.correct_answer }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Status</h6>
+                        {% if response.is_correct %}
+                        <span class="badge bg-success">Correct</span>
+                        {% else %}
+                        <span class="badge bg-danger">Incorrect</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-2">Submitted At</h6>
+                        <p class="mb-0">{{ response.submitted_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Details -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 fade-in shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">Question Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Question Type</h6>
+                        <p class="mb-0">{{ response.question.question_type }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Subject</h6>
+                        <p class="mb-0">{{ response.question.subtopic.general_topic.subject.name }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">General Topic</h6>
+                        <p class="mb-0">{{ response.question.subtopic.general_topic.name }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Subtopic</h6>
+                        <p class="mb-0">{{ response.question.subtopic.name }}</p>
+                    </div>
+                    {% if response.question.explanation %}
+                    <div>
+                        <h6 class="text-muted mb-2">Explanation</h6>
+                        <p class="mb-0">{{ response.question.explanation }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %} 

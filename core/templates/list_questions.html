@@ -1,0 +1,859 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid h-100 py-4">
+    <div class="row h-100">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3 h-100">
+            <div class="card shadow-sm h-100 filter-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+                </div>
+                <div class="card-body overflow-auto">
+                    <form method="get" id="filterForm">
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label class="form-label text-primary fw-bold">Search</label>
+                            <input type="text" name="search" class="form-control filter-input" value="{{ filters.search }}" placeholder="Search questions...">
+                        </div>
+
+                        <!-- Subject Filter -->
+                        <div class="mb-3">
+                            <label class="form-label text-primary fw-bold">Subject</label>
+                            <select name="subject" id="subjectSelect" class="form-select filter-input">
+                                <option value="">All Subjects</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if filters.subject_id == subject.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ subject.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- General Topic Filter -->
+                        <div class="mb-3">
+                            <label class="form-label text-primary fw-bold">General Topic</label>
+                            <select name="general_topic" id="generalTopicSelect" class="form-select filter-input" {% if not filters.subject_id %}disabled{% endif %}>
+                                <option value="">All General Topics</option>
+                                {% for topic in general_topics %}
+                                <option value="{{ topic.id }}" {% if filters.general_topic_id == topic.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ topic.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Question Type Filter -->
+                        <div class="mb-3">
+                            <label class="form-label text-primary fw-bold">Question Type</label>
+                            <select name="type" class="form-select filter-input">
+                                <option value="">All Types</option>
+                                {% for type_code, type_name in question_types %}
+                                <option value="{{ type_code }}" {% if filters.question_type == type_code %}selected{% endif %}>
+                                    {{ type_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Level Filter -->
+                        <div class="mb-3">
+                            <label class="form-label text-primary fw-bold">Level</label>
+                            <select name="level" class="form-select filter-input">
+                                <option value="">All Levels</option>
+                                {% for level in levels %}
+                                <option value="{{ level }}" {% if filters.level == level|stringformat:"s" %}selected{% endif %}>
+                                    Level {{ level }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- School Year Filter -->
+                        <div class="mb-3">
+                            <label class="form-label text-primary fw-bold">School Year</label>
+                            <select name="school_year" class="form-select filter-input">
+                                <option value="">All School Years</option>
+                                {% for year in school_years %}
+                                <option value="{{ year.id }}" {% if filters.school_year_id == year.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ year.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 filter-submit">
+                            <i class="fas fa-search me-2"></i>Apply Filters
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="col-md-9 h-100">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center sticky-top">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Questions</h5>
+                    <a href="{% url 'add_question' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Question
+                    </a>
+                </div>
+                <div class="card-body overflow-auto">
+                    <!-- Statistics Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <i class="fas fa-question-circle fa-2x text-primary"></i>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">Total Questions</h6>
+                                                    <h4 class="mb-0">{{ total_questions|default:"0" }}</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <i class="fas fa-filter fa-2x text-info"></i>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">Filtered Questions</h6>
+                                                    <h4 class="mb-0">{{ questions|length|default:"0" }}</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">Active Filters</h6>
+                                                    <h4 class="mb-0">{{ active_filters|default:"0" }}</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    <i class="fas fa-percentage fa-2x text-warning"></i>
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h6 class="mb-0">Filter Coverage</h6>
+                                                    <h4 class="mb-0">
+                                                        {% if total_questions > 0 %}
+                                                            {% widthratio questions|length total_questions 100 %}%
+                                                        {% else %}
+                                                            0%
+                                                        {% endif %}
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skeleton Loader -->
+                    {% if skeleton %}
+                    <div class="skeleton-loader">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th><div class="skeleton-line"></div></th>
+                                        <th><div class="skeleton-line"></div></th>
+                                        <th><div class="skeleton-line"></div></th>
+                                        <th><div class="skeleton-line"></div></th>
+                                        <th><div class="skeleton-line"></div></th>
+                                        <th><div class="skeleton-line"></div></th>
+                                        <th><div class="skeleton-line"></div></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in "12345" %}
+                                    <tr>
+                                        <td><div class="skeleton-line"></div></td>
+                                        <td><div class="skeleton-line"></div></td>
+                                        <td><div class="skeleton-line"></div></td>
+                                        <td><div class="skeleton-line"></div></td>
+                                        <td><div class="skeleton-line"></div></td>
+                                        <td><div class="skeleton-line"></div></td>
+                                        <td><div class="skeleton-line"></div></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Real Content -->
+                    {% if questions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Subject</th>
+                                    <th>General Topic</th>
+                                    <th>Type</th>
+                                    <th>Points</th>
+                                    <th>School Year</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for question in questions %}
+                                <tr>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 300px;">
+                                            {{ question.question_text }}
+                                        </div>
+                                    </td>
+                                    <td>{{ question.subtopic.general_topic.subject.name }}</td>
+                                    <td>{{ question.subtopic.general_topic.name }}</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ question.get_question_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ question.points }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            {{ question.school_year.name|default:"No School Year" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary view-btn" data-question-id="{{ question.id }}" title="View Question">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="{% url 'edit_question' question.id %}" class="btn btn-sm btn-outline-warning edit-btn" 
+                                           data-question-id="{{ question.id }}"
+                                           data-question-type="{{ question.question_type }}"
+                                           {% if question.question_type == 'multiple_choice' %}
+                                           data-choices="{% for choice in question.choices.all %}{{ choice.choice_text }}|{{ choice.is_correct }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                                           {% endif %}
+                                           title="Edit Question">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger delete-btn" data-question-id="{{ question.id }}" title="Delete Question">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No questions found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">No questions found</div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Question Details Modal -->
+<div class="modal fade" id="questionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-light sticky-top">
+                <h5 class="modal-title">
+                    <i class="fas fa-question-circle text-primary me-2"></i>Question Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="fas fa-align-left me-2"></i>Question Text
+                                </h6>
+                                <div class="question-text-container">
+                                    <p id="questionText" class="card-text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>Question Info
+                                </h6>
+                                <div id="questionType" class="mb-3"></div>
+                                <div id="questionCategory" class="small text-muted"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light sticky-bottom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>Delete Question
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this question?</p>
+                <p class="text-danger mb-0">
+                    <i class="fas fa-info-circle me-2"></i>This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <form method="post" id="deleteForm" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    padding: 1rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Make sure the container takes full height */
+html, body {
+    height: 100%;
+}
+
+/* Ensure the main content area takes full height */
+.container-fluid {
+    min-height: calc(100vh - 60px); /* Adjust 60px based on your header height */
+}
+
+/* Make sure the row and columns take full height */
+.row.h-100 {
+    min-height: 100%;
+}
+
+/* Ensure the card body scrolls if content overflows */
+.card-body.overflow-auto {
+    max-height: calc(100vh - 200px); /* Adjust based on your header and padding */
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+.table td {
+    vertical-align: middle;
+}
+.badge {
+    padding: 0.5em 0.75em;
+}
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+}
+.modal {
+    z-index: 1050;
+}
+.modal-backdrop {
+    z-index: 1040;
+}
+.modal-content {
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+.modal-header {
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    padding: 1.25rem;
+}
+.modal-footer {
+    border-top: 1px solid rgba(0,0,0,.125);
+    padding: 1.25rem;
+}
+.btn-danger {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+    border: none;
+}
+.btn-danger:hover {
+    background: linear-gradient(45deg, #c82333, #bd2130);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Modal Styles */
+.modal-dialog-scrollable .modal-content {
+    max-height: 90vh;
+}
+
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 1020;
+}
+
+.question-text-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.question-text-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.question-text-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.question-text-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.question-text-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.question-text-container {
+    flex: 1;
+}
+
+#questionText {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+@media (max-width: 991.98px) {
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .question-text-container {
+        max-height: 40vh;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .modal-dialog {
+        margin: 0;
+    }
+    
+    .modal-content {
+        min-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .question-text-container {
+        max-height: none;
+    }
+}
+
+/* Filter Card Styles */
+.filter-card {
+    position: relative;
+    z-index: 1;  /* Lower z-index to prevent stacking issues */
+}
+
+.filter-card .card-header {
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(45deg, #0d6efd, #0a58ca);
+}
+
+.filter-card .card-body {
+    position: relative;
+    z-index: 1;
+    background-color: #f8f9fa;
+}
+
+.filter-input {
+    position: relative;
+    z-index: 2;  /* Higher than parent to ensure clickability */
+    cursor: pointer;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.filter-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.filter-input:hover {
+    border-color: #0d6efd;
+}
+
+.filter-submit {
+    background: linear-gradient(45deg, #0d6efd, #0a58ca);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.filter-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+.form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-select, .form-control {
+    position: relative;
+    z-index: 2;
+    font-size: 0.9rem;
+}
+
+/* Disabled state styling */
+.form-select:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* Remove any pointer-events restrictions */
+.form-select,
+.form-control,
+.filter-input {
+    pointer-events: auto !important;
+}
+
+/* Ensure the filter form is clickable */
+#filterForm {
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure dropdowns are above other elements when open */
+.form-select:focus {
+    z-index: 3;
+}
+
+.skeleton-loader {
+    padding: 1rem;
+}
+.skeleton-line {
+    height: 1rem;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+}
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize modals
+    const questionModal = new bootstrap.Modal(document.getElementById('questionModal'));
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteForm = document.getElementById('deleteForm');
+    const filterForm = document.getElementById('filterForm');
+    
+    // Get filter select elements
+    const subjectSelect = document.getElementById('subjectSelect');
+    const generalTopicSelect = document.getElementById('generalTopicSelect');
+    const allFilterSelects = document.querySelectorAll('.filter-input');
+
+    // Remove any existing event listeners
+    allFilterSelects.forEach(select => {
+        const newSelect = select.cloneNode(true);
+        select.parentNode.replaceChild(newSelect, select);
+    });
+
+    // Re-initialize all filter dropdowns
+    document.querySelectorAll('.filter-input').forEach(select => {
+        // Remove any inline styles that might interfere
+        select.style.removeProperty('pointer-events');
+        select.style.removeProperty('z-index');
+        
+        // Add click event listener
+        select.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Ensure the select is focused
+            this.focus();
+        });
+
+        // Add change event listener
+        select.addEventListener('change', function() {
+            if (this.id !== 'subjectSelect') {
+                filterForm.submit();
+            }
+        });
+    });
+
+    // Update subject change handler
+    const newSubjectSelect = document.getElementById('subjectSelect');
+    newSubjectSelect.addEventListener('change', function() {
+        const subjectId = this.value;
+        const generalTopicSelect = document.getElementById('generalTopicSelect');
+        
+        // Reset general topic select
+        generalTopicSelect.innerHTML = '<option value="">All General Topics</option>';
+        
+        if (subjectId) {
+            generalTopicSelect.disabled = false;
+            
+            fetch(`/subject/${subjectId}/general-topics/`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(topic => {
+                        const option = document.createElement('option');
+                        option.value = topic.id;
+                        option.textContent = topic.name;
+                        generalTopicSelect.appendChild(option);
+                    });
+                    filterForm.submit();
+                })
+                .catch(error => console.error('Error fetching general topics:', error));
+        } else {
+            generalTopicSelect.disabled = true;
+            filterForm.submit();
+        }
+    });
+
+    // Function to load questions via AJAX
+    function loadQuestions() {
+        const filterForm = document.getElementById('filterForm');
+        const formData = new FormData(filterForm);
+        formData.append('skeleton', '0');
+
+        // Show loading state
+        const tableContainer = document.querySelector('.table-responsive');
+        if (tableContainer) {
+            tableContainer.innerHTML = `
+                <div class="skeleton-loader">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><div class="skeleton-line"></div></th>
+                                <th><div class="skeleton-line"></div></th>
+                                <th><div class="skeleton-line"></div></th>
+                                <th><div class="skeleton-line"></div></th>
+                                <th><div class="skeleton-line"></div></th>
+                                <th><div class="skeleton-line"></div></th>
+                                <th><div class="skeleton-line"></div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in "12345" %}
+                            <tr>
+                                <td><div class="skeleton-line"></div></td>
+                                <td><div class="skeleton-line"></div></td>
+                                <td><div class="skeleton-line"></div></td>
+                                <td><div class="skeleton-line"></div></td>
+                                <td><div class="skeleton-line"></div></td>
+                                <td><div class="skeleton-line"></div></td>
+                                <td><div class="skeleton-line"></div></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        fetch(window.location.pathname + '?' + new URLSearchParams(formData), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Create a temporary container to parse the HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            
+            // Extract only the questions table section
+            const newTable = temp.querySelector('.table-responsive');
+            if (newTable) {
+                document.querySelector('.table-responsive').replaceWith(newTable);
+            }
+            
+            // Update statistics
+            const stats = temp.querySelector('.row.mb-4');
+            if (stats) {
+                document.querySelector('.row.mb-4').replaceWith(stats);
+            }
+            
+            // Reinitialize event listeners for the new content
+            initializeEventListeners();
+        })
+        .catch(error => {
+            console.error('Error loading questions:', error);
+            // Show error state
+            const tableContainer = document.querySelector('.table-responsive');
+            if (tableContainer) {
+                tableContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Error loading questions. Please try again.
+                    </div>
+                `;
+            }
+        });
+    }
+
+    // Function to initialize event listeners
+    function initializeEventListeners() {
+        // Handle view button clicks
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const questionId = this.getAttribute('data-question-id');
+                const questionRow = this.closest('tr');
+                
+                // Get question details from the row
+                const questionText = questionRow.querySelector('.text-truncate').textContent.trim();
+                const subject = questionRow.cells[1].textContent.trim();
+                const generalTopic = questionRow.cells[2].textContent.trim();
+                const type = questionRow.cells[3].querySelector('.badge').textContent.trim();
+                const points = questionRow.cells[4].textContent.trim();
+                const schoolYear = questionRow.cells[5].querySelector('.badge').textContent.trim();
+                
+                // Update modal content
+                document.getElementById('questionText').textContent = questionText;
+                document.getElementById('questionType').innerHTML = `
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="badge bg-info">${type}</span>
+                        <span class="badge bg-success">${points} points</span>
+                    </div>
+                `;
+                document.getElementById('questionCategory').innerHTML = `
+                    <div class="mb-2">
+                        <i class="fas fa-book me-2"></i>${subject}
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-folder me-2"></i>${generalTopic}
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar me-2"></i>${schoolYear}
+                    </div>
+                `;
+                
+                // Show the modal
+                questionModal.show();
+            });
+        });
+
+        // Handle delete button clicks
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const questionId = this.getAttribute('data-question-id');
+                deleteForm.action = `/questions/${questionId}/delete/`;
+                deleteModal.show();
+            });
+        });
+
+        // Handle edit button clicks
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const questionId = this.dataset.questionId;
+                const questionType = this.dataset.questionType;
+                const choices = this.dataset.choices;
+                
+                if (questionType === 'multiple_choice' && choices) {
+                    sessionStorage.setItem(`question_${questionId}_choices`, choices);
+                }
+                
+                window.location.href = this.href;
+            });
+        });
+    }
+
+    // Initialize event listeners on page load
+    initializeEventListeners();
+
+    // Load questions when filters change
+    const filterInputs = document.querySelectorAll('.filter-input');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', loadQuestions);
+    });
+
+    // Load questions when form is submitted
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadQuestions();
+    });
+
+    // Initial load if skeleton is shown
+    {% if skeleton %}
+    loadQuestions();
+    {% endif %}
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,1277 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Add CSRF token at the top of the content block -->
+{% csrf_token %}
+
+<div class="container-fluid p-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="card shadow-lg">
+                <div class="card-header bg-gradient text-white d-flex flex-wrap justify-content-between align-items-center border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <h3 class="mb-0">Student Weak Topics</h3>
+                    </div>
+                    <a href="{% url 'download_hierarchy_docx' %}" class="btn btn-light">
+                        <i class="fas fa-file-word me-2"></i>Download as DOCX
+                    </a>
+                </div>
+                <div class="card-body p-4 position-relative">
+                    <!-- Main Skeleton Loader -->
+                    <div id="mainSkeleton">
+                        <div class="skeleton-card mb-4">
+                            <div class="skeleton skeleton-title mb-3" style="width: 250px;"></div>
+                            <div class="skeleton skeleton-text mb-4" style="width: 350px; height: 2.5em;"></div>
+                            <div class="skeleton-card-body">
+                                {% for i in "1234" %}
+                                <div class="skeleton-card mb-3" style="height: 3.5em;"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Real Content (hidden until skeleton is gone) -->
+                    <div id="mainContent" style="display:none;">
+                        <div class="mb-4">
+                            <input type="text" id="studentSearch" class="form-control form-control-lg" placeholder="Search student name..." aria-label="Search student name">
+                        </div>
+                        {% if all_student_weaknesses %}
+                            <div class="accordion" id="weakTopicsAccordion">
+                                {% regroup all_student_weaknesses by student as student_list %}
+                                {% for student in student_list %}
+                                    <div class="accordion-item mb-3 student-accordion-item" data-student-name="{{ student.grouper.get_full_name|default:student.grouper.username|lower }}" data-student-id="{{ student.grouper.id }}">
+                                        <h2 class="accordion-header" id="headingStudent{{ student.grouper.id }}">
+                                            <button class="accordion-button collapsed" type="button" 
+                                        data-bs-toggle="collapse" 
+                                                    data-bs-target="#collapseStudent{{ student.grouper.id }}">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-user-graduate me-2"></i>
+                                                    <strong class="student-name">{{ student.grouper.get_full_name|default:student.grouper.username }}</strong>
+                                                    <span class="badge bg-warning ms-2">Weak Areas</span>
+                                    </div>
+                                </button>
+                            </h2>
+                                        <div id="collapseStudent{{ student.grouper.id }}" 
+                                 class="accordion-collapse collapse" 
+                                             data-bs-parent="#weakTopicsAccordion">
+                                <div class="accordion-body">
+                                                <div id="studentWeakTopics{{ student.grouper.id }}" class="student-weak-topics-content">
+                                                    <!-- Loading skeleton for weak topics (hidden by default, shown while fetching) -->
+                                                </div>
+                                            </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                No students found.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Question Count Modal -->
+<div class="modal fade" id="questionCountModal" tabindex="-1" aria-labelledby="questionCountModalLabel" aria-hidden="true">
+    <!-- ... existing code ... -->
+</div>
+
+<!-- Manual Question Form Modal -->
+{% include 'manual_question_form.html' %}
+
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // If no students are rendered, fetch them via AJAX
+    var mainSkeleton = document.getElementById('mainSkeleton');
+    var mainContent = document.getElementById('mainContent');
+    if (!document.querySelector('.student-accordion-item')) {
+        fetch(window.location.pathname + '?skeleton=0', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(response => response.text())
+            .then(html => {
+                // Extract the mainContent div from the response
+                var tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                var newContent = tempDiv.querySelector('#mainContent');
+                if (newContent) {
+                    mainContent.innerHTML = newContent.innerHTML;
+                    mainSkeleton.style.display = 'none';
+                    mainContent.style.display = 'block';
+                }
+                // Re-attach event listeners for search and accordion
+                attachStudentHierarchyListeners();
+            });
+    } else {
+        mainSkeleton.style.display = 'none';
+        mainContent.style.display = 'block';
+        attachStudentHierarchyListeners();
+    }
+
+    function attachStudentHierarchyListeners() {
+        const searchInput = document.getElementById('studentSearch');
+        const studentItems = document.querySelectorAll('.student-accordion-item');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim().toLowerCase();
+                studentItems.forEach(item => {
+                    const studentName = item.getAttribute('data-student-name');
+                    if (studentName.includes(query)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+        document.querySelectorAll('.accordion-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const parentItem = button.closest('.student-accordion-item');
+                const studentId = parentItem.getAttribute('data-student-id');
+                const contentDiv = document.getElementById('studentWeakTopics' + studentId);
+                // Only fetch if not already loaded
+                if (!contentDiv.dataset.loaded) {
+                    // Show skeleton loader
+                    contentDiv.innerHTML = `
+                    <div class="skeleton-card mb-3">
+                        <div class="skeleton-card-header">
+                            <div class="skeleton skeleton-title" style="width: 180px;"></div>
+                            <div class="skeleton skeleton-badge"></div>
+                        </div>
+                        <div class="skeleton-card-body">
+                            <div class="table-responsive">
+                                <table class="skeleton-table">
+                                    <thead>
+                                        <tr>
+                                            <th><div class="skeleton skeleton-text"></div></th>
+                                            <th><div class="skeleton skeleton-text"></div></th>
+                                            <th><div class="skeleton skeleton-text"></div></th>
+                                            <th><div class="skeleton skeleton-text"></div></th>
+                                            <th><div class="skeleton skeleton-text"></div></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><div class="skeleton skeleton-text"></div></td>
+                                            <td><div class="skeleton skeleton-badge"></div></td>
+                                            <td><div class="skeleton skeleton-text"></div></td>
+                                            <td><div class="skeleton skeleton-text"></div></td>
+                                            <td><div class="skeleton skeleton-button"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td><div class="skeleton skeleton-text"></div></td>
+                                            <td><div class="skeleton skeleton-badge"></div></td>
+                                            <td><div class="skeleton skeleton-text"></div></td>
+                                            <td><div class="skeleton skeleton-text"></div></td>
+                                            <td><div class="skeleton skeleton-button"></div></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>`;
+                    fetch(`/student-weak-topics/${studentId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.weak_topics && data.weak_topics.length > 0) {
+                                // First, find the highest level for each subject
+                                const subjectMaxLevels = data.weak_topics.reduce((acc, item) => {
+                                    const key = item.subject;
+                                    if (!acc[key] || acc[key] < item.level) {
+                                        acc[key] = item.level;
+                                    }
+                                    return acc;
+                                }, {});
+
+                                // Group topics by subject, keeping only those at the highest level
+                                const latestLevelTopics = data.weak_topics.reduce((acc, item) => {
+                                    const key = item.subject;
+                                    if (!acc[key]) {
+                                        acc[key] = [];
+                                    }
+                                    if (item.level === subjectMaxLevels[key]) {
+                                        acc[key].push(item);
+                                    }
+                                    return acc;
+                                }, {});
+
+                                // Sort subjects alphabetically
+                                const sortedSubjects = Object.keys(latestLevelTopics).sort();
+
+                                let html = '<div class="subject-groups">';
+                                sortedSubjects.forEach(subject => {
+                                    const topics = latestLevelTopics[subject];
+                                    html += `
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">
+                                                    <i class="fas fa-book me-2"></i>${subject}
+                                                    <span class="badge bg-info ms-2">Level ${subjectMaxLevels[subject]}</span>
+                                                    <span class="badge bg-warning ms-2">${topics.length} Weak ${topics.length === 1 ? 'Topic' : 'Topics'}</span>
+                                                </h5>
+                                                <button class="btn btn-sm btn-outline-primary question-count-btn" 
+                                                        data-subject="${subject}" 
+                                                        data-level="${subjectMaxLevels[subject]}">
+                                                    <i class="fas fa-question-circle me-1"></i>Count Available Questions
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="list-group list-group-flush">`;
+                                    
+                                    topics.forEach(topic => {
+                                        html += `
+                                        <div class="list-group-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-4">
+                                                    <h6 class="mb-1">${topic.subtopic}</h6>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p class="mb-0 text-muted">${topic.description ? topic.description : '<em>No description available</em>'}</p>
+                                                </div>
+                                                <div class="col-md-2 text-end">
+                                                    <a href="/take_quiz/${topic.subtopic_id}/" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-play me-1"></i>Practice
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>`;
+                                    });
+                                    
+                                    html += `
+                                            </div>
+                                        </div>
+                                    </div>`;
+                                });
+                                html += '</div>';
+                                contentDiv.innerHTML = html;
+                            } else {
+                                contentDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>No weak topics found for this student.</div>';
+                            }
+                            contentDiv.dataset.loaded = '1';
+                        })
+                        .catch(() => {
+                            contentDiv.innerHTML = '<div class="alert alert-danger">Failed to load weak topics.</div>';
+                        });
+                }
+            });
+        });
+
+        // Add event listener for question count buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.question-count-btn')) {
+                const button = e.target.closest('.question-count-btn');
+                const subject = button.dataset.subject;
+                const level = button.dataset.level;
+                const studentId = button.closest('.student-accordion-item').getAttribute('data-student-id');
+                
+                // Disable button and show loading state
+                button.disabled = true;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Loading...';
+                
+                // Fetch question count
+                fetch(`/api/question-count/?subject=${encodeURIComponent(subject)}&level=${level}&student_id=${studentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Create and show the modal
+                        const modal = document.createElement('div');
+                        modal.className = 'modal fade';
+                        modal.id = 'questionCountModal';
+                        modal.setAttribute('tabindex', '-1');
+                        modal.setAttribute('aria-labelledby', 'questionCountModalLabel');
+                        modal.setAttribute('aria-hidden', 'true');
+                        
+                        // Calculate totals
+                        const totalRequired = data.topics.reduce((sum, topic) => sum + topic.required, 0);
+                        const totalAvailable = data.topics.reduce((sum, topic) => sum + topic.count, 0);
+                        const totalLacking = data.topics.reduce((sum, topic) => sum + topic.lacking, 0);
+                        
+                        modal.innerHTML = `
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header draggable-header">
+                                        <h5 class="modal-title" id="questionCountModalLabel">
+                                            Available Questions for ${subject} (Level ${level})
+                                            <span class="badge bg-primary ms-2">${totalAvailable} Total Questions</span>
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Subtopic</th>
+                                                        <th class="text-end">Available Questions</th>
+                                                        <th class="text-end">Required Questions</th>
+                                                        <th class="text-end">Questions Lacking</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${data.topics.map(topic => `
+                                                        <tr>
+                                                            <td>${topic.subtopic}</td>
+                                                            <td class="text-end">
+                                                                <span class="badge ${topic.count >= topic.required ? 'bg-success' : 'bg-warning'}">
+                                                                    ${topic.count}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-end">${topic.required}</td>
+                                                            <td class="text-end">
+                                                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                                                    <span class="badge ${topic.lacking === 0 ? 'bg-success' : 'bg-danger'}">
+                                                                        ${topic.lacking}
+                                                                    </span>
+                                                                    ${topic.lacking > 0 ? `
+                                                                        <div class="d-flex align-items-center justify-content-end gap-2">
+                                                                            <span class="badge ${topic.lacking === 0 ? 'bg-success' : 'bg-danger'}">
+                                                                                ${topic.lacking}
+                                                                            </span>
+                                                                            <button class="btn btn-sm btn-outline-primary add-question-btn" 
+                                                                                    data-subtopic-id="${topic.subtopic_id}"
+                                                                                    data-subtopic="${topic.subtopic}"
+                                                                                    data-level="${level}"
+                                                                                    data-student-id="${studentId}">
+                                                                                <i class="fas fa-plus-circle me-1"></i>Add Question
+                                                                            </button>
+                                                                            <button type="button" class="btn btn-primary manual-question-btn" 
+                                                                                    data-subtopic-id="${topic.subtopic_id}" 
+                                                                                    data-subtopic-name="${topic.subtopic}" 
+                                                                                    data-level="${level}" 
+                                                                                    data-student-id="${studentId}">
+                                                                                <i class="fas fa-plus me-2"></i>Add Manually
+                                                                            </button>
+                                                                        </div>
+                                                                    ` : ''}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    `).join('')}
+                                                    <tr class="fw-bold bg-light">
+                                                        <td>Total</td>
+                                                        <td class="text-center">${totalAvailable}</td>
+                                                        <td class="text-center">${totalRequired}</td>
+                                                        <td class="text-center">
+                                                            <span class="badge bg-danger">${totalLacking}</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="alert alert-info mt-3">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Note:</strong> This subject requires a total of ${data.required_questions} questions with the following distribution:
+                                            <ul class="mb-0 mt-2">
+                                                <li>
+                                                    <span class="badge bg-success">Easy</span>
+                                                    ${Math.round(data.required_questions * data.difficulty_distribution.easy / 100)} questions (${data.difficulty_distribution.easy}%)
+                                                </li>
+                                                <li>
+                                                    <span class="badge bg-warning">Medium</span>
+                                                    ${Math.round(data.required_questions * data.difficulty_distribution.medium / 100)} questions (${data.difficulty_distribution.medium}%)
+                                                </li>
+                                                <li>
+                                                    <span class="badge bg-danger">Hard</span>
+                                                    ${Math.round(data.required_questions * data.difficulty_distribution.hard / 100)} questions (${data.difficulty_distribution.hard}%)
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-info refresh-questions-btn" data-subject="${subject}" data-level="${level}" data-student-id="${studentId}">
+                                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                                        </button>
+                                        <button type="button" class="btn btn-primary generate-questions-btn" data-subject="${subject}" data-level="${level}" data-student-id="${studentId}">
+                                            <i class="fas fa-magic me-1"></i>Generate Questions
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Remove existing modal if any
+                        const existingModal = document.getElementById('questionCountModal');
+                        if (existingModal) {
+                            existingModal.remove();
+                        }
+                        
+                        // Add new modal to body and show it
+                        document.body.insertAdjacentHTML('beforeend', modal.outerHTML);
+                        const modalInstance = new bootstrap.Modal(document.getElementById('questionCountModal'));
+                        
+                        // Make the modal draggable after it's shown
+                        modalInstance._element.addEventListener('shown.bs.modal', function () {
+                            const modalDialog = this.querySelector('.modal-dialog');
+                            const header = this.querySelector('.draggable-header');
+                            let isDragging = false;
+                            let currentX;
+                            let currentY;
+                            let initialX;
+                            let initialY;
+                            let xOffset = 0;
+                            let yOffset = 0;
+
+                            function dragStart(e) {
+                                if (e.type === "touchstart") {
+                                    initialX = e.touches[0].clientX - xOffset;
+                                    initialY = e.touches[0].clientY - yOffset;
+                                } else {
+                                    initialX = e.clientX - xOffset;
+                                    initialY = e.clientY - yOffset;
+                                }
+
+                                if (e.target === header || header.contains(e.target)) {
+                                    isDragging = true;
+                                }
+                            }
+
+                            function dragEnd(e) {
+                                initialX = currentX;
+                                initialY = currentY;
+                                isDragging = false;
+                            }
+
+                            function drag(e) {
+                                if (isDragging) {
+                                    e.preventDefault();
+
+                                    if (e.type === "touchmove") {
+                                        currentX = e.touches[0].clientX - initialX;
+                                        currentY = e.touches[0].clientY - initialY;
+                                    } else {
+                                        currentX = e.clientX - initialX;
+                                        currentY = e.clientY - initialY;
+                                    }
+
+                                    xOffset = currentX;
+                                    yOffset = currentY;
+
+                                    setTranslate(currentX, currentY, modalDialog);
+                                }
+                            }
+
+                            function setTranslate(xPos, yPos, el) {
+                                el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+                            }
+
+                            header.addEventListener("touchstart", dragStart, false);
+                            header.addEventListener("touchend", dragEnd, false);
+                            header.addEventListener("touchmove", drag, false);
+
+                            header.addEventListener("mousedown", dragStart, false);
+                            header.addEventListener("mouseup", dragEnd, false);
+                            header.addEventListener("mousemove", drag, false);
+                        });
+                        
+                        // Add event listener for generate questions button
+                        const generateBtn = document.querySelector('#questionCountModal .generate-questions-btn');
+                        if (generateBtn) {
+                            generateBtn.addEventListener('click', async function() {
+                                console.log('Generate button clicked'); // Debug log
+                                const button = this;
+                                const subject = button.dataset.subject;
+                                const level = button.dataset.level;
+                                const studentId = button.dataset.studentId;
+                                
+                                console.log('Button data:', { subject, level, studentId }); // Debug log
+                                
+                                // Disable button and show loading state
+                                button.disabled = true;
+                                const originalText = button.innerHTML;
+                                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating...';
+                                
+                                try {
+                                    // Get CSRF token
+                                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    console.log('CSRF Token:', csrfToken); // Debug log
+                                    
+                                    // Get weak subtopics for this student
+                                    console.log('Fetching weak topics...'); // Debug log
+                                    const weakTopicsResponse = await fetch(`/student-weak-topics/${studentId}/`);
+                                    const weakTopicsData = await weakTopicsResponse.json();
+                                    console.log('Weak topics data:', weakTopicsData); // Debug log
+                                    
+                                    if (!weakTopicsData.weak_topics || weakTopicsData.weak_topics.length === 0) {
+                                        throw new Error('No weak topics found for this student');
+                                    }
+                                    
+                                    // Filter weak topics for this subject and level
+                                    const relevantTopics = weakTopicsData.weak_topics.filter(topic => 
+                                        topic.subject === subject && topic.level === parseInt(level)
+                                    );
+                                    console.log('Relevant topics:', relevantTopics); // Debug log
+                                    
+                                    if (relevantTopics.length === 0) {
+                                        throw new Error('No weak topics found for this subject and level');
+                                    }
+                                    
+                                    // Generate questions for each weak subtopic
+                                    let totalGenerated = 0;
+                                    for (const topic of relevantTopics) {
+                                        try {
+                                            console.log('Generating questions for topic:', topic); // Debug log
+                                            const response = await fetch('/api/generate-questions/', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRFToken': csrfToken
+                                                },
+                                                body: JSON.stringify({
+                                                    subtopic_id: topic.subtopic_id,
+                                                    level: level,
+                                                    student_id: studentId
+                                                })
+                                            });
+                                            
+                                            console.log('Generation response:', response); // Debug log
+                                            
+                                            if (!response.ok) {
+                                                const errorData = await response.json();
+                                                throw new Error(errorData.error || `Failed to generate questions for ${topic.subtopic}`);
+                                            }
+                                            
+                                            const result = await response.json();
+                                            console.log('Generation result:', result); // Debug log
+                                            totalGenerated += result.generated_count;
+                                        } catch (error) {
+                                            console.error(`Error generating questions for ${topic.subtopic}:`, error);
+                                        }
+                                    }
+                                    
+                                    // Show success message
+                                    const alertDiv = document.createElement('div');
+                                    alertDiv.className = 'alert alert-success mt-3';
+                                    alertDiv.innerHTML = `
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        Successfully generated ${totalGenerated} questions for weak topics.
+                                    `;
+                                    document.querySelector('#questionCountModal .modal-body').appendChild(alertDiv);
+                                    
+                                    // Refresh the question count
+                                    const countBtn = document.querySelector(`.question-count-btn[data-subject="${subject}"][data-level="${level}"]`);
+                                    if (countBtn) {
+                                        countBtn.click();
+                                    }
+                                } catch (error) {
+                                    console.error('Error generating questions:', error);
+                                    const alertDiv = document.createElement('div');
+                                    alertDiv.className = 'alert alert-danger mt-3';
+                                    alertDiv.innerHTML = `
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        ${error.message || 'Failed to generate questions. Please try again.'}
+                                    `;
+                                    document.querySelector('#questionCountModal .modal-body').appendChild(alertDiv);
+                                } finally {
+                                    // Restore button state
+                                    button.disabled = false;
+                                    button.innerHTML = originalText;
+                                }
+                            });
+                        } else {
+                            console.error('Generate button not found in modal'); // Debug log
+                        }
+                        
+                        // Add event listener for the refresh button
+                        document.addEventListener('click', function(e) {
+                            if (e.target.closest('.refresh-questions-btn')) {
+                                const button = e.target.closest('.refresh-questions-btn');
+                                const subject = button.dataset.subject;
+                                const level = button.dataset.level;
+                                const studentId = button.dataset.studentId;
+                                
+                                // Disable button and show loading state
+                                button.disabled = true;
+                                const originalText = button.innerHTML;
+                                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...';
+                                
+                                // Fetch updated question count
+                                fetch(`/api/question-count/?subject=${encodeURIComponent(subject)}&level=${level}&student_id=${studentId}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        // Remove existing modal
+                                        const existingModal = document.getElementById('questionCountModal');
+                                        if (existingModal) {
+                                            existingModal.remove();
+                                        }
+                                        
+                                        // Create and show new modal with updated data
+                                        const modal = document.createElement('div');
+                                        modal.className = 'modal fade';
+                                        modal.id = 'questionCountModal';
+                                        modal.setAttribute('tabindex', '-1');
+                                        modal.setAttribute('aria-labelledby', 'questionCountModalLabel');
+                                        modal.setAttribute('aria-hidden', 'true');
+                                        
+                                        // Calculate totals
+                                        const totalRequired = data.topics.reduce((sum, topic) => sum + topic.required, 0);
+                                        const totalAvailable = data.topics.reduce((sum, topic) => sum + topic.count, 0);
+                                        const totalLacking = data.topics.reduce((sum, topic) => sum + topic.lacking, 0);
+                                        
+                                        // Update modal content with new data
+                                        modal.innerHTML = `
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header draggable-header">
+                                                        <h5 class="modal-title" id="questionCountModalLabel">
+                                                            Available Questions for ${subject} (Level ${level})
+                                                            <span class="badge bg-primary ms-2">${totalAvailable} Total Questions</span>
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-striped">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Subtopic</th>
+                                                                        <th class="text-end">Available Questions</th>
+                                                                        <th class="text-end">Required Questions</th>
+                                                                        <th class="text-end">Questions Lacking</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    ${data.topics.map(topic => `
+                                                                        <tr>
+                                                                            <td>${topic.subtopic}</td>
+                                                                            <td class="text-end">
+                                                                                <span class="badge ${topic.count >= topic.required ? 'bg-success' : 'bg-warning'}">
+                                                                                    ${topic.count}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td class="text-end">${topic.required}</td>
+                                                                            <td class="text-end">
+                                                                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                                                                    <span class="badge ${topic.lacking === 0 ? 'bg-success' : 'bg-danger'}">
+                                                                                        ${topic.lacking}
+                                                                                    </span>
+                                                                                    ${topic.lacking > 0 ? `
+                                                                                        <button class="btn btn-sm btn-outline-primary add-question-btn" 
+                                                                                                data-subtopic-id="${topic.subtopic_id}"
+                                                                                                data-subtopic="${topic.subtopic}"
+                                                                                                data-level="${level}"
+                                                                                                data-student-id="${studentId}">
+                                                                                            <i class="fas fa-plus-circle me-1"></i>Add Question
+                                                                                        </button>
+                                                                                        <button type="button" class="btn btn-primary manual-question-btn" 
+                                                                                                data-subtopic-id="${topic.subtopic_id}" 
+                                                                                                data-subtopic-name="${topic.subtopic}" 
+                                                                                                data-level="${level}" 
+                                                                                                data-student-id="${studentId}">
+                                                                                            <i class="fas fa-plus me-2"></i>Add Manually
+                                                                                        </button>
+                                                                                    ` : ''}
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    `).join('')}
+                                                                    <tr class="fw-bold bg-light">
+                                                                        <td>Total</td>
+                                                                        <td class="text-center">${totalAvailable}</td>
+                                                                        <td class="text-center">${totalRequired}</td>
+                                                                        <td class="text-center">
+                                                                            <span class="badge bg-danger">${totalLacking}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="alert alert-info mt-3">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            <strong>Note:</strong> This subject requires a total of ${data.required_questions} questions with the following distribution:
+                                                            <ul class="mb-0 mt-2">
+                                                                <li>
+                                                                    <span class="badge bg-success">Easy</span>
+                                                                    ${Math.round(data.required_questions * data.difficulty_distribution.easy / 100)} questions (${data.difficulty_distribution.easy}%)
+                                                                </li>
+                                                                <li>
+                                                                    <span class="badge bg-warning">Medium</span>
+                                                                    ${Math.round(data.required_questions * data.difficulty_distribution.medium / 100)} questions (${data.difficulty_distribution.medium}%)
+                                                                </li>
+                                                                <li>
+                                                                    <span class="badge bg-danger">Hard</span>
+                                                                    ${Math.round(data.required_questions * data.difficulty_distribution.hard / 100)} questions (${data.difficulty_distribution.hard}%)
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="button" class="btn btn-info refresh-questions-btn" data-subject="${subject}" data-level="${level}" data-student-id="${studentId}">
+                                                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                                                        </button>
+                                                        <button type="button" class="btn btn-primary generate-questions-btn" data-subject="${subject}" data-level="${level}" data-student-id="${studentId}">
+                                                            <i class="fas fa-magic me-1"></i>Generate Questions
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                        
+                                        // Add new modal to body and show it
+                                        document.body.appendChild(modal);
+                                        const modalInstance = new bootstrap.Modal(document.getElementById('questionCountModal'));
+                                        modalInstance.show();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error refreshing question count:', error);
+                                        const alertDiv = document.createElement('div');
+                                        alertDiv.className = 'alert alert-danger mt-3';
+                                        alertDiv.innerHTML = `
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            Failed to refresh question counts. Please try again.
+                                        `;
+                                        document.querySelector('#questionCountModal .modal-body').appendChild(alertDiv);
+                                    })
+                                    .finally(() => {
+                                        // Restore button state
+                                        button.disabled = false;
+                                        button.innerHTML = originalText;
+                                    });
+                            }
+                        });
+                        
+                        modalInstance.show();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching question count:', error);
+                        alert('Failed to load question counts. Please try again.');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    });
+            }
+        });
+
+        // Add event listener for add question buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.add-question-btn')) {
+                const button = e.target.closest('.add-question-btn');
+                const subtopicId = button.dataset.subtopicId;
+                const subtopic = button.dataset.subtopic;
+                const level = button.dataset.level;
+                const studentId = button.dataset.studentId;
+                
+                // Disable button and show loading state
+                button.disabled = true;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating...';
+                
+                // Get CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                // Generate questions for this specific subtopic
+                fetch('/api/generate-questions/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        subtopic_id: subtopicId,
+                        level: level,
+                        student_id: studentId
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success mt-3';
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        Successfully generated ${result.generated_count} questions for ${subtopic}.
+                    `;
+                    document.querySelector('#questionCountModal .modal-body').appendChild(alertDiv);
+                    
+                    // Refresh the question count
+                    const countBtn = document.querySelector(`.question-count-btn[data-subject="${subject}"][data-level="${level}"]`);
+                    if (countBtn) {
+                        countBtn.click();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error generating questions:', error);
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger mt-3';
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        ${error.message || 'Failed to generate questions. Please try again.'}
+                    `;
+                    document.querySelector('#questionCountModal .modal-body').appendChild(alertDiv);
+                })
+                .finally(() => {
+                    // Restore button state
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                });
+            }
+        });
+
+        // Add event listener for manual question buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.manual-question-btn')) {
+                const button = e.target.closest('.manual-question-btn');
+                const subtopicId = button.dataset.subtopicId;
+                const subtopicName = button.dataset.subtopicName;
+                const level = button.dataset.level;
+                const studentId = button.dataset.studentId;
+                
+                console.log('Manual question button clicked:', {
+                    subtopicId,
+                    subtopicName,
+                    level,
+                    studentId,
+                    buttonPosition: button.getBoundingClientRect()
+                });
+                
+                // Validate required data
+                if (!subtopicId || subtopicId === 'undefined') {
+                    console.error('Invalid subtopic ID:', subtopicId);
+                    alert('Error: Invalid subtopic ID. Please try again.');
+                    return;
+                }
+                
+                if (!level || level === 'undefined') {
+                    console.error('Invalid level:', level);
+                    alert('Error: Invalid level. Please try again.');
+                    return;
+                }
+                
+                if (!studentId || studentId === 'undefined') {
+                    console.error('Invalid student ID:', studentId);
+                    alert('Error: Invalid student ID. Please try again.');
+                    return;
+                }
+                
+                // Close question count modal if open
+                const questionCountModal = document.getElementById('questionCountModal');
+                if (questionCountModal) {
+                    const modalInstance = bootstrap.Modal.getInstance(questionCountModal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
+                
+                // Set values in the form
+                const form = document.getElementById('manualQuestionForm');
+                if (!form) {
+                    console.error('Manual question form not found');
+                    alert('Error: Form not found. Please refresh the page and try again.');
+                    return;
+                }
+                
+                // Show loading state
+                button.disabled = true;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+                
+                // Fetch subtopic data
+                fetch(`/api/get-subtopic-data/${subtopicId}/`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Subtopic data received:', data);
+                        
+                        // Update form fields with the received data
+                        const schoolYearSelect = form.querySelector('[name="school_year"]');
+                        const subjectSelect = form.querySelector('[name="subject"]');
+                        const generalTopicSelect = form.querySelector('[name="general_topic"]');
+                        const levelSelect = form.querySelector('[name="level"]');
+                        const subtopicIdInput = form.querySelector('[name="subtopic_id"]');
+                        const studentIdInput = form.querySelector('[name="student_id"]');
+                        
+                        // Set required fields first
+                        if (subtopicIdInput) subtopicIdInput.value = subtopicId;
+                        if (studentIdInput) studentIdInput.value = studentId;
+                        if (levelSelect) levelSelect.value = level;
+                        
+                        // Set optional fields if available, fetching names if needed
+                        const promises = [];
+                        if (schoolYearSelect && data.school_year) {
+                            promises.push(ensureOption(
+                                schoolYearSelect,
+                                data.school_year,
+                                `/api/school-years/`, // You may need to implement this endpoint if not present
+                                'name'
+                            ));
+                        }
+                        if (subjectSelect && data.subject) {
+                            promises.push(ensureOption(
+                                subjectSelect,
+                                data.subject,
+                                `/subjects/`,
+                                'name'
+                            ));
+                        }
+                        if (generalTopicSelect && data.general_topic && data.subject) {
+                            promises.push(ensureOption(
+                                generalTopicSelect,
+                                data.general_topic,
+                                `/api/get-general-topics/${data.subject}/`,
+                                'name'
+                            ));
+                        }
+                        Promise.all(promises).then(() => {
+                            // Update modal title
+                            const modalTitle = document.querySelector('#manualQuestionModal .modal-title');
+                            if (modalTitle) {
+                                modalTitle.textContent = `Add Manual Question - ${subtopicName}`;
+                            }
+                            // Show the modal
+                            const modal = new bootstrap.Modal(document.getElementById('manualQuestionModal'));
+                            modal.show();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching subtopic data:', error);
+                        alert('Error loading subtopic data. Please try again.');
+                    })
+                    .finally(() => {
+                        // Restore button state
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    });
+            }
+        });
+
+        // Handle modal backdrop
+        document.addEventListener('shown.bs.modal', function(e) {
+            if (e.target.id === 'manualQuestionModal') {
+                const questionCountModal = document.getElementById('questionCountModal');
+                if (questionCountModal) {
+                    questionCountModal.style.zIndex = '1055';
+                }
+            }
+        });
+    }
+
+    // Initialize manual question modal
+    const manualQuestionModal = new bootstrap.Modal(document.getElementById('manualQuestionModal'));
+
+    // Handle manual question button click
+    document.querySelectorAll('.manual-question-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const subtopicId = this.dataset.subtopicId;
+            const subtopicName = this.dataset.subtopicName;
+            const level = this.dataset.level;
+            const studentId = this.dataset.studentId;
+
+            // Set the values in the form
+            document.getElementById('manualSubtopicId').value = subtopicId;
+            document.getElementById('manualLevel').value = level;
+            document.getElementById('manualStudentId').value = studentId;
+
+            // Update modal title with subtopic name
+            document.getElementById('manualQuestionModalLabel').innerHTML = `
+                <i class="fas fa-plus-circle me-2"></i>Add Question for ${subtopicName}
+            `;
+
+            // Show the modal
+            manualQuestionModal.show();
+        });
+    });
+});
+
+function ensureOption(select, value, fetchUrl, labelField = 'name') {
+    if (!value) return Promise.resolve();
+    let option = select.querySelector(`option[value='${value}']`);
+    if (option) {
+        select.value = value;
+        return Promise.resolve();
+    }
+    // Fetch the name from the backend
+    return fetch(fetchUrl)
+        .then(response => response.json())
+        .then(data => {
+            let name = value;
+            if (Array.isArray(data)) {
+                // For list endpoints
+                const found = data.find(item => item.id == value);
+                if (found) name = found[labelField];
+            } else if (data[labelField]) {
+                name = data[labelField];
+            }
+            option = document.createElement('option');
+            option.value = value;
+            option.textContent = name;
+            select.appendChild(option);
+            select.value = value;
+        });
+}
+</script>
+
+<style>
+/* Skeleton Loading Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, 
+        var(--card-bg) 0%, 
+        var(--border-color) 50%, 
+        var(--card-bg) 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+    border-radius: 4px;
+}
+
+.skeleton-text {
+    height: 1em;
+    margin: 0.5em 0;
+}
+
+.skeleton-title {
+    height: 2em;
+    margin-bottom: 1em;
+}
+
+.skeleton-badge {
+    height: 1.5em;
+    width: 4em;
+    border-radius: 1em;
+}
+
+.skeleton-button {
+    height: 2.5em;
+    width: 8em;
+    border-radius: 0.5em;
+}
+
+/* Skeleton Card */
+.skeleton-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.skeleton-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.skeleton-card-body {
+    display: grid;
+    gap: 1rem;
+}
+
+/* Skeleton Table */
+.skeleton-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.skeleton-table th,
+.skeleton-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skeleton-table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 3fr 1fr;
+    gap: 1rem;
+    padding: 0.75rem 0;
+}
+
+/* Card Styles */
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e7f1ff;
+    color: #0d6efd;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0,0,0,.125);
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.alert {
+    border-radius: 10px;
+}
+
+/* Search Bar Styles */
+#studentSearch {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Flexible Modal Styles */
+.modal-dialog {
+    position: absolute !important;
+    margin: 1.75rem auto !important;
+    pointer-events: all !important;
+    transform: translate(-50%, -50%) !important;
+    top: 50% !important;
+    left: 50% !important;
+    max-width: 90% !important;
+    width: auto !important;
+    min-width: 300px !important;
+    max-height: 90vh !important;
+}
+
+.modal-content {
+    border-radius: 12px !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 90vh !important;
+}
+
+.modal-header {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    padding: 1rem !important;
+    flex-shrink: 0 !important;
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.modal-body {
+    padding: 1rem !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    min-height: 100px !important;
+    max-height: calc(90vh - 130px) !important;
+}
+
+.modal-footer {
+    padding: 1rem !important;
+    flex-shrink: 0 !important;
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #dee2e6 !important;
+}
+
+/* Table Styles */
+.table-responsive {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.table {
+    margin-bottom: 0 !important;
+}
+
+.table th {
+    position: sticky !important;
+    top: 0 !important;
+    background-color: #f8f9fa !important;
+    z-index: 1 !important;
+}
+
+/* Alert Styles */
+.alert {
+    margin: 1rem 0 !important;
+    padding: 0.75rem 1rem !important;
+}
+
+/* Button Styles */
+.btn-sm {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.875rem !important;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.5em 0.75em !important;
+    font-weight: 500 !important;
+}
+
+/* Draggable Header */
+.draggable-header {
+    cursor: move !important;
+    user-select: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+
+.draggable-header .modal-title {
+    margin: 0 !important;
+    flex: 1 !important;
+    padding-right: 1rem !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0.5rem !important;
+        max-width: calc(100% - 1rem) !important;
+    }
+    
+    .modal-body {
+        padding: 0.75rem !important;
+    }
+    
+    .table td, .table th {
+        padding: 0.5rem !important;
+    }
+    
+    .btn-sm {
+        padding: 0.2rem 0.4rem !important;
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Animation */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out !important;
+}
+
+.modal.show .modal-dialog {
+    transform: translate(-50%, -50%) !important;
+}
+
+/* Ensure the modal stays within viewport */
+.modal-backdrop {
+    z-index: 1055 !important;
+}
+
+.modal {
+    z-index: 1056 !important;
+}
+</style>
+{% endblock %} 

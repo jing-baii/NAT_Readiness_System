@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Recommended Study Materials</h2>
+    
+    {% if recommended_links %}
+        <div class="row">
+            {% for link in recommended_links %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ link.title }}</h5>
+                            <p class="card-text">{{ link.description }}</p>
+                            <p class="text-muted">Topic: {{ link.subtopic.topic.name }}</p>
+                            <p class="text-muted">Subtopic: {{ link.subtopic.name }}</p>
+                            <a href="{% url 'track_link_access' link.id %}" class="btn btn-primary" target="_blank">
+                                Access Resource
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No recommendations available yet. Take some quizzes to get personalized recommendations!
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

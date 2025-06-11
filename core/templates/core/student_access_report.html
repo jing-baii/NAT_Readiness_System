@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Student Access Report</h2>
+
+    <!-- Summary Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Total Students</h5>
+                    <p class="h3">{{ total_students }}</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Total Accesses</h5>
+                    <p class="h3">{{ total_accesses }}</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Total Time Spent</h5>
+                    <p class="h3">{{ total_time_spent }} hours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Details -->
+    {% for student in students %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>{{ student.user.get_full_name }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <h6>Total Accesses</h6>
+                    <p>{{ student.total_accesses }}</p>
+                </div>
+                <div class="col-md-4">
+                    <h6>Total Time Spent</h6>
+                    <p>{{ student.total_time_spent }} hours</p>
+                </div>
+                <div class="col-md-4">
+                    <h6>Last Access</h6>
+                    <p>{{ student.last_access|date:"F j, Y" }}</p>
+                </div>
+            </div>
+
+            <!-- Subject-wise Details -->
+            <h5 class="mb-3">Subject-wise Details</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Accesses</th>
+                            <th>Time Spent</th>
+                            <th>Last Access</th>
+                            <th>Quiz Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject in student.subjects %}
+                        <tr>
+                            <td>{{ subject.name }}</td>
+                            <td>{{ subject.accesses }}</td>
+                            <td>{{ subject.time_spent }} hours</td>
+                            <td>{{ subject.last_access|date:"F j, Y" }}</td>
+                            <td>
+                                {% if subject.quiz_progress %}
+                                    Level: {{ subject.quiz_progress.level }}<br>
+                                    Attempts: {{ subject.quiz_progress.total_attempts }}<br>
+                                    Highest Score: {{ subject.quiz_progress.highest_score }}%
+                                {% else %}
+                                    No quiz attempts
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary modify-quiz" 
+                                        data-student-id="{{ student.user.id }}"
+                                        data-subject-id="{{ subject.id }}"
+                                        data-level="{{ subject.quiz_progress.level|default:1 }}"
+                                        data-attempts="{{ subject.quiz_progress.total_attempts|default:0 }}"
+                                        data-score="{{ subject.quiz_progress.highest_score|default:0 }}">
+                                    Modify Quiz Progress
+                                </button>
+                                <button class="btn btn-sm btn-danger reset-quiz"
+                                        data-student-id="{{ student.user.id }}"
+                                        data-subject-id="{{ subject.id }}">
+                                    Reset Quiz Data
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modify Quiz Progress Modal -->
+<div class="modal fade" id="modifyQuizModal" tabindex="-1" aria-labelledby="modifyQuizModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modifyQuizModalLabel">Modify Quiz Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="modifyQuizForm">
+                    <input type="hidden" id="studentId" name="student_id">
+                    <input type="hidden" id="subjectId" name="subject_id">
+                    <div class="mb-3">
+                        <label for="newLevel" class="form-label">New Level</label>
+                        <input type="number" class="form-control" id="newLevel" name="new_level" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="totalAttempts" class="form-label">Total Attempts</label>
+                        <input type="number" class="form-control" id="totalAttempts" name="total_attempts" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="highestScore" class="form-label">Highest Score (%)</label>
+                        <input type="number" class="form-control" id="highestScore" name="highest_score" min="0" max="100" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveQuizProgress">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal(document.getElementById('modifyQuizModal'));
+    const modifyButtons = document.querySelectorAll('.modify-quiz');
+    const resetButtons = document.querySelectorAll('.reset-quiz');
+    const form = document.getElementById('modifyQuizForm');
+    const saveButton = document.getElementById('saveQuizProgress');
+
+    modifyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('studentId').value = this.dataset.studentId;
+            document.getElementById('subjectId').value = this.dataset.subjectId;
+            document.getElementById('newLevel').value = this.dataset.level;
+            document.getElementById('totalAttempts').value = this.dataset.attempts;
+            document.getElementById('highestScore').value = this.dataset.score;
+            modal.show();
+        });
+    });
+
+    saveButton.addEventListener('click', function() {
+        const formData = new FormData(form);
+        fetch('{% url "modify_quiz_progress" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating quiz progress');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating quiz progress');
+        });
+    });
+
+    resetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset the quiz data for this subject?')) {
+                fetch('{% url "reset_quiz_data" %}', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        student_id: this.dataset.studentId,
+                        subject_id: this.dataset.subjectId
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error resetting quiz data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error resetting quiz data');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

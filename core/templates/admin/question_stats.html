@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Question Statistics</h2>
+                    <p class="text-muted mb-0">Detailed analysis of question performance</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4 fade-in">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="subject" class="form-label">Filter by Subject</label>
+                    <div class="dropdown">
+                        <select name="subject" id="subject" class="form-select" data-bs-toggle="dropdown" aria-expanded="false">
+                            <option value="">All Subjects</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if selected_subject == subject.id %}selected{% endif %}>
+                                    {{ subject.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="level" class="form-label">Filter by Level</label>
+                    <div class="dropdown">
+                        <select name="level" id="level" class="form-select" data-bs-toggle="dropdown" aria-expanded="false">
+                            <option value="">All Levels</option>
+                            {% for level in levels %}
+                                <option value="{{ level }}" {% if selected_level == level %}selected{% endif %}>
+                                    Level {{ level }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="difficulty" class="form-label">Filter by Difficulty</label>
+                    <div class="dropdown">
+                        <select name="difficulty" id="difficulty" class="form-select" data-bs-toggle="dropdown" aria-expanded="false">
+                            <option value="">All Difficulties</option>
+                            <option value="Pending" {% if selected_difficulty == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Very Easy" {% if selected_difficulty == 'Very Easy' %}selected{% endif %}>Very Easy</option>
+                            <option value="Moderate" {% if selected_difficulty == 'Moderate' %}selected{% endif %}>Moderate</option>
+                            <option value="Very Hard" {% if selected_difficulty == 'Very Hard' %}selected{% endif %}>Very Hard</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics by Level and Subject -->
+    <div class="card mb-4 fade-in">
+        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+    {% for level, subjects in stats_by_level.items %}
+                <div class="mb-4">
+                    <h4 class="card-title mb-3">{{ level }}</h4>
+                {% for subject, stats in subjects.items %}
+                    <div class="mb-4">
+                        <h5 class="mb-3">{{ subject }}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                    <thead class="sticky-top bg-white">
+                                    <tr>
+                                        <th>Question</th>
+                                        <th>Total Attempts</th>
+                                        <th>Success Rate</th>
+                                        <th>Difficulty</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stat in stats %}
+                                    <tr>
+                                        <td>{{ stat.question.question_text|truncatechars:50 }}</td>
+                                        <td>{{ stat.total_attempts }}</td>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center" style="min-width:120px;">
+                                                <div class="progress progress-bar-custom flex-grow-1" style="height: 16px; margin-right: 0.5rem;">
+                                                    <div class="progress-bar {% if stat.success_rate >= 70 %}bg-success{% elif stat.success_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                         role="progressbar"
+                                                         style="width: {{ stat.success_rate }}%; border-radius: 8px;"
+                                                         aria-valuenow="{{ stat.success_rate }}"
+                                                         aria-valuemin="0"
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <span class="fw-bold text-dark" style="min-width: 38px; text-align: right;">{{ stat.success_rate }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                                {% if stat.difficulty == 'Pending' %}
+                                                <span class="badge bg-secondary" title="Waiting for all students to attempt">
+                                                    Pending
+                                                </span>
+                                                {% elif stat.difficulty == 'Very Easy' %}
+                                                    <span class="badge bg-success">
+                                                        Very Easy
+                                                    </span>
+                                                {% elif stat.difficulty == 'Moderate' %}
+                                                    <span class="badge bg-warning">
+                                                        Moderate
+                                                    </span>
+                                            {% else %}
+                                                    <span class="badge bg-danger">
+                                                        Very Hard
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'edit_question' stat.question.id %}" class="btn btn-sm btn-outline-primary" title="Edit Question">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'question_details' stat.question.id %}" class="btn btn-sm btn-outline-info" title="View Details">
+                                                <i class="fas fa-info-circle"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No questions available for this subject</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center text-muted">No questions available for this level</div>
+                {% endfor %}
+            </div>
+    {% empty %}
+                <div class="text-center text-muted">No question statistics available</div>
+            {% endfor %}
+            </div>
+        </div>
+</div>
+
+<style>
+.progress-bar-custom {
+    height: 16px;
+    border-radius: 8px;
+    background-color: #e9ecef;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+    min-width: 60px;
+}
+
+.progress-bar-custom .progress-bar {
+    border-radius: 8px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    min-width: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Add styles to ensure dropdowns are clickable */
+.form-select {
+    cursor: pointer;
+    position: relative;
+    z-index: 1000;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    width: 100%;
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.form-select:focus {
+    box-shadow: none;
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Make sure Bootstrap is loaded
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap is not loaded');
+        return;
+    }
+
+    // Initialize all dropdowns
+    document.querySelectorAll('.form-select').forEach(function(select) {
+        // Remove any existing event listeners
+        select.removeEventListener('click', handleSelectClick);
+        select.removeEventListener('change', handleSelectChange);
+        
+        // Add new event listeners
+        select.addEventListener('click', handleSelectClick);
+        select.addEventListener('change', handleSelectChange);
+    });
+
+    function handleSelectClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Toggle the dropdown manually
+        const select = e.target;
+        const dropdown = new bootstrap.Dropdown(select);
+        dropdown.toggle();
+    }
+
+    function handleSelectChange(e) {
+        // Submit the form when a selection is made
+        e.target.closest('form').submit();
+    }
+});
+</script>
+{% endblock %} 

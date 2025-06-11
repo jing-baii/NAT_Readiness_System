@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">All Student Responses</h2>
+                    <p class="text-muted mb-0">View and analyze student responses</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main container with fixed height and scroll -->
+    <div class="responses-container">
+        <!-- Group responses by student -->
+        {% regroup responses by student as student_responses %}
+        {% for student_group in student_responses %}
+        <div class="card mb-4 fade-in shadow-sm">
+            <div class="card-header bg-light">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-circle me-3">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">{{ student_group.grouper.username }}</h5>
+                        <p class="text-muted mb-0">Total Responses: {{ student_group.list|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Response</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for response in student_group.list %}
+                            <tr>
+                                <td>{{ response.question.question_text|truncatechars:50 }}</td>
+                                <td>{{ response.answer|truncatechars:50 }}</td>
+                                <td>
+                                    {% if response.is_correct %}
+                                    <span class="badge bg-success">Correct</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Incorrect</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ response.submitted_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'view_response' response.id %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card fade-in shadow-sm">
+            <div class="card-body text-center text-muted">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <h5>No responses found</h5>
+                <p class="mb-0">There are no student responses to display.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.responses-container {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar styles */
+.responses-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.responses-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.responses-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.responses-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-light);
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    padding: 1rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+</style>
+{% endblock %} 

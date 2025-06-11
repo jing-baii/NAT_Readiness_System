@@ -1,0 +1,771 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="survey-container">
+    <div class="survey-header">
+        <div class="header-content">
+            <h1>🎓 System Evaluation Survey</h1>
+            <p class="lead">Help us understand your experience with the system</p>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="survey-card">
+                    <div class="progress-container">
+                        <div class="progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                        <div class="progress-steps">
+                            <span class="step active">System Evaluation</span>
+                        </div>
+                    </div>
+
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Experience Ratings Section -->
+                        <div class="survey-section active" data-section="experience">
+                            <div class="section-header">
+                                <h2>Experience Ratings</h2>
+                                <p>Please rate your experience with different aspects of the system</p>
+                            </div>
+                            
+                            <div class="likert-legend">
+                                <div class="legend-item">
+                                    <span class="legend-value">5</span>
+                                    <span class="legend-label">Strongly Agree</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-value">4</span>
+                                    <span class="legend-label">Agree</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-value">3</span>
+                                    <span class="legend-label">Moderate</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-value">2</span>
+                                    <span class="legend-label">Disagree</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-value">1</span>
+                                    <span class="legend-label">Strongly Disagree</span>
+                                </div>
+                            </div>
+                            
+                            <div class="rating-cards">
+                                <!-- Overall Experience -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">🎯</div>
+                                    <h3>Overall Experience</h3>
+                                    <p class="text-muted">Rate your overall experience with the system</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How would you rate your overall experience with the system?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_performance" id="pu1{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu1{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Content Quality -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">📚</div>
+                                    <h3>Content Quality</h3>
+                                    <p class="text-muted">Rate the quality of the learning content</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How would you rate the quality of the learning content?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_resources" id="pu2{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu2{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- System Usability -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">🔄</div>
+                                    <h3>System Usability</h3>
+                                    <p class="text-muted">Rate how easy the system is to use</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How easy is the system to use?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="peu_learning" id="peu1{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="peu1{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- System Control -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">🎮</div>
+                                    <h3>System Control</h3>
+                                    <p class="text-muted">Rate how much control you have over the system</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How much control do you have over the system?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="peu_control" id="peu2{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="peu2{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Difficulty Level -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">📊</div>
+                                    <h3>Difficulty Level</h3>
+                                    <p class="text-muted">Rate the difficulty level of the content</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How would you rate the difficulty level of the content?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_effectiveness" id="pu3{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu3{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feature Ratings Section -->
+                        <div class="survey-section" data-section="features">
+                            <div class="section-header">
+                                <h2>Feature Ratings</h2>
+                                <p>Please rate specific features of the system</p>
+                            </div>
+                            
+                            <div class="rating-cards">
+                                <!-- Quiz Quality -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">✍️</div>
+                                    <h3>Quiz Quality</h3>
+                                    <p class="text-muted">Rate the quality of the quizzes</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How would you rate the quality of the quizzes?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_performance" id="pu4{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu4{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Study Materials -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">📖</div>
+                                    <h3>Study Materials</h3>
+                                    <p class="text-muted">Rate the quality of study materials</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How would you rate the quality of study materials?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_resources" id="pu5{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu5{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Tracking -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">📈</div>
+                                    <h3>Progress Tracking</h3>
+                                    <p class="text-muted">Rate the progress tracking features</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How would you rate the progress tracking features?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_goals" id="pu6{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu6{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendations -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">🎯</div>
+                                    <h3>Recommendations</h3>
+                                    <p class="text-muted">Rate the quality of recommendations</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How would you rate the quality of recommendations?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_recommendation" id="pu7{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu7{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Learning Impact Section -->
+                        <div class="survey-section" data-section="impact">
+                            <div class="section-header">
+                                <h2>Learning Impact</h2>
+                                <p>Please rate how the system has impacted your learning</p>
+                            </div>
+                            
+                            <div class="rating-cards">
+                                <!-- Knowledge Improvement -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">🧠</div>
+                                    <h3>Knowledge Improvement</h3>
+                                    <p class="text-muted">Rate how the system has improved your knowledge</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How has the system improved your knowledge?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_understanding" id="pu8{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu8{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Confidence Improvement -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">💪</div>
+                                    <h3>Confidence Improvement</h3>
+                                    <p class="text-muted">Rate how the system has improved your confidence</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How has the system improved your confidence?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_effectiveness" id="pu9{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu9{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Study Habits -->
+                                <div class="rating-card">
+                                    <div class="rating-icon">📚</div>
+                                    <h3>Study Habits</h3>
+                                    <p class="text-muted">Rate how the system has improved your study habits</p>
+                                    
+                                    <div class="tam-questions">
+                                        <div class="tam-question">
+                                            <label class="form-label required">How has the system improved your study habits?</label>
+                                            <div class="rating-group">
+                                                {% for i in "54321" %}
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="pu_productivity" id="pu10{{ i }}" value="{{ i }}" required>
+                                                    <label class="form-check-label" for="pu10{{ i }}">{{ i }}</label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feature Usage Section -->
+                        <div class="survey-section" data-section="usage">
+                            <div class="section-header">
+                                <h2>Feature Usage</h2>
+                                <p>Tell us about your usage of different features</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Which features did you find most helpful?</label>
+                                <select class="form-select" name="helpful_features" multiple>
+                                    <option value="quizzes">Quizzes</option>
+                                    <option value="study_materials">Study Materials</option>
+                                    <option value="progress_tracking">Progress Tracking</option>
+                                    <option value="recommendations">Recommendations</option>
+                                    <option value="practice_questions">Practice Questions</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Which features did you use most often?</label>
+                                <select class="form-select" name="most_used_features" multiple>
+                                    <option value="quizzes">Quizzes</option>
+                                    <option value="study_materials">Study Materials</option>
+                                    <option value="progress_tracking">Progress Tracking</option>
+                                    <option value="recommendations">Recommendations</option>
+                                    <option value="practice_questions">Practice Questions</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Which features did you use least often?</label>
+                                <select class="form-select" name="least_used_features" multiple>
+                                    <option value="quizzes">Quizzes</option>
+                                    <option value="study_materials">Study Materials</option>
+                                    <option value="progress_tracking">Progress Tracking</option>
+                                    <option value="recommendations">Recommendations</option>
+                                    <option value="practice_questions">Practice Questions</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Section -->
+                        <div class="survey-section" data-section="feedback">
+                            <div class="section-header">
+                                <h2>Feedback</h2>
+                                <p>Share your thoughts and suggestions</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label required">What suggestions do you have for improving the system?</label>
+                                <textarea class="form-control" name="suggestions" rows="3" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">What aspects of the system did you like most?</label>
+                                <textarea class="form-control" name="favorite_aspects" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">What challenges did you face while using the system?</label>
+                                <textarea class="form-control" name="challenges_faced" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Any additional comments?</label>
+                                <textarea class="form-control" name="additional_comments" rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Submit Survey</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .survey-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    }
+
+    .survey-header {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        padding: 3rem 0;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .header-content h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .header-content .lead {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .survey-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .progress-container {
+        margin-bottom: 3rem;
+    }
+
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #e2e8f0;
+        margin-bottom: 1rem;
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+        transition: width 0.3s ease;
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .step {
+        font-size: 0.9rem;
+        color: #64748b;
+        position: relative;
+        padding-top: 1.5rem;
+    }
+
+    .step::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 20px;
+        background: #e2e8f0;
+        border-radius: 50%;
+        z-index: 1;
+    }
+
+    .step.active {
+        color: #4f46e5;
+    }
+
+    .step.active::before {
+        background: #4f46e5;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .section-header h2 {
+        color: #1e293b;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-header p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    .rating-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .rating-card {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .rating-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .rating-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .tam-questions {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .tam-question {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .tam-question label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .rating-card h3 {
+        color: #1e293b;
+        font-size: 1.4rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .rating-card .text-muted {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .rating-group {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .form-check-inline {
+        margin: 0;
+    }
+
+    .form-check-input[type="radio"] {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-top: 0.25rem;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        font-size: 1.2rem;
+        padding-left: 0.5rem;
+        cursor: pointer;
+    }
+
+    .survey-navigation {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .likert-legend {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .legend-value {
+        font-weight: 600;
+        color: #4f46e5;
+        min-width: 1.5rem;
+        text-align: center;
+    }
+
+    .legend-label {
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    @media (max-width: 768px) {
+        .survey-header {
+            padding: 1.5rem 0;
+        }
+
+        .header-content h1 {
+            font-size: 1.75rem;
+        }
+
+        .header-content p {
+            font-size: 1rem;
+        }
+
+        .survey-card {
+            padding: 1rem;
+            margin: 0 -0.5rem;
+            border-radius: 0;
+        }
+
+        .rating-cards {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .rating-card {
+            padding: 1rem;
+        }
+
+        .rating-icon {
+            font-size: 1.5rem;
+        }
+
+        .rating-group {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .form-check-inline {
+            margin: 0.25rem;
+        }
+
+        .form-check-input[type="radio"] {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .form-check-label {
+            font-size: 1rem;
+        }
+
+        .survey-navigation {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+        }
+
+        .likert-legend {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .legend-item {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .survey-header {
+            padding: 1rem 0;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+        }
+
+        .header-content p {
+            font-size: 0.9rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .section-header p {
+            font-size: 1rem;
+        }
+
+        .rating-card {
+            padding: 0.75rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        
+        // Form validation
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Prevent accidental navigation away
+        window.onbeforeunload = function() {
+            return "Are you sure you want to leave? Your survey progress will be lost.";
+        };
+
+        // Remove the warning when form is submitted
+        form.addEventListener('submit', function() {
+            window.onbeforeunload = null;
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card practice-card">
+                <div class="card-header practice-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0 practice-title">{{ subtopic.name }} Practice</h3>
+                            <p class="text-muted mb-0">Practice at your own pace</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="practice-container">
+                        {% for question in questions %}
+                            <div class="practice-question" id="question_{{ question.id }}">
+                                <div class="question-header">
+                                    <h4 class="question-title">Question {{ forloop.counter }}</h4>
+                                    <p class="question-text">{{ question.text }}</p>
+                                </div>
+                                
+                                <div class="question-body">
+                                    {% if question.type == 'multiple_choice' %}
+                                        <div class="choices">
+                                            {% for choice in question.choices %}
+                                                <div class="choice-item">
+                                                    <input class="form-check-input" type="radio" 
+                                                           name="answer_{{ question.id }}" 
+                                                           value="{{ choice.id }}"
+                                                           id="choice_{{ choice.id }}">
+                                                    <label class="form-check-label" for="choice_{{ choice.id }}">
+                                                        <span class="choice-letter">
+                                                            {% if forloop.counter == 1 %}A
+                                                            {% elif forloop.counter == 2 %}B
+                                                            {% elif forloop.counter == 3 %}C
+                                                            {% elif forloop.counter == 4 %}D
+                                                            {% else %}{{ forloop.counter }}
+                                                            {% endif %}
+                                                        </span>
+                                                        <span class="choice-text">{{ choice.choice_text }}</span>
+                                                    </label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    
+                                    {% elif question.type == 'true_false' %}
+                                        <div class="true-false-choices">
+                                            <div class="choice-item">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="answer_{{ question.id }}" 
+                                                       value="True"
+                                                       id="true_{{ question.id }}">
+                                                <label class="form-check-label" for="true_{{ question.id }}">
+                                                    <span class="choice-letter">A</span>
+                                                    <span class="choice-text">True</span>
+                                                </label>
+                                            </div>
+                                            <div class="choice-item">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="answer_{{ question.id }}" 
+                                                       value="False"
+                                                       id="false_{{ question.id }}">
+                                                <label class="form-check-label" for="false_{{ question.id }}">
+                                                    <span class="choice-letter">B</span>
+                                                    <span class="choice-text">False</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    
+                                    {% elif question.type == 'short_answer' %}
+                                        <div class="short-answer-input">
+                                            <input type="text" class="form-control" 
+                                                   name="answer_{{ question.id }}" 
+                                                   placeholder="Type your answer here...">
+                                        </div>
+                                    
+                                    {% elif question.type == 'essay' %}
+                                        <div class="essay-input">
+                                            <textarea class="form-control" name="answer_{{ question.id }}" 
+                                                      rows="4" 
+                                                      placeholder="Write your answer here..."></textarea>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="question-actions">
+                                    <button type="button" class="btn btn-check" 
+                                            onclick="checkAnswer({{ question.id }})">
+                                        <i class="fas fa-check"></i>
+                                        <span>Check Answer</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="answer-feedback" id="feedback_{{ question.id }}" style="display: none;">
+                                    <div class="feedback-content">
+                                        <div class="feedback-icon">
+                                            <i class="fas"></i>
+                                        </div>
+                                        <div class="feedback-text">
+                                            <h5 class="feedback-title"></h5>
+                                            <p class="feedback-explanation"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function checkAnswer(questionId) {
+    const formData = new FormData();
+    formData.append('question_id', questionId);
+    
+    // Get the answer based on question type
+    const questionElement = document.getElementById(`question_${questionId}`);
+    const answerInput = questionElement.querySelector(`input[name="answer_${questionId}"]:checked`) || 
+                       questionElement.querySelector(`input[name="answer_${questionId}"]`) ||
+                       questionElement.querySelector(`textarea[name="answer_${questionId}"]`);
+    
+    if (!answerInput) {
+        alert('Please select an answer');
+        return;
+    }
+    
+    formData.append('answer', answerInput.value);
+    
+    // Show loading state
+    const checkButton = questionElement.querySelector('.btn-check');
+    checkButton.disabled = true;
+    checkButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    
+    // Send the answer to the server
+    fetch('{% url "start_practice" subtopic.id %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update the feedback
+        const feedback = document.getElementById(`feedback_${questionId}`);
+        const feedbackIcon = feedback.querySelector('.feedback-icon i');
+        const feedbackTitle = feedback.querySelector('.feedback-title');
+        const feedbackExplanation = feedback.querySelector('.feedback-explanation');
+        
+        if (data.is_correct) {
+            feedback.classList.add('correct');
+            feedbackIcon.className = 'fas fa-check-circle';
+            feedbackTitle.textContent = 'Correct!';
+        } else {
+            feedback.classList.add('incorrect');
+            feedbackIcon.className = 'fas fa-times-circle';
+            feedbackTitle.textContent = 'Incorrect';
+        }
+        
+        feedbackExplanation.textContent = data.explanation;
+        feedback.style.display = 'block';
+        
+        // Reset button state
+        checkButton.disabled = false;
+        checkButton.innerHTML = '<i class="fas fa-check"></i><span>Check Answer</span>';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while checking your answer');
+        
+        // Reset button state
+        checkButton.disabled = false;
+        checkButton.innerHTML = '<i class="fas fa-check"></i><span>Check Answer</span>';
+    });
+}
+</script>
+
+<style>
+:root {
+    --primary-color: #4a6bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --light-bg: #f8f9fa;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.practice-card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.practice-header {
+    background: linear-gradient(135deg, var(--primary-color), #6a5acd);
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+}
+
+.practice-title {
+    font-weight: 600;
+    color: white;
+}
+
+.practice-question {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+}
+
+.question-header {
+    margin-bottom: 2rem;
+}
+
+.question-title {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.question-text {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    margin-top: 1rem;
+}
+
+.choices, .true-false-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.choice-item {
+    background: var(--light-bg);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.choice-item:hover {
+    background: #e9ecef;
+}
+
+.choice-item input[type="radio"] {
+    margin-right: 1rem;
+}
+
+.choice-letter {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    margin-right: 1rem;
+}
+
+.choice-text {
+    font-size: 1rem;
+}
+
+.question-actions {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.btn-check {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-check:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+.answer-feedback {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    display: none;
+}
+
+.answer-feedback.correct {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid var(--success-color);
+}
+
+.answer-feedback.incorrect {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid var(--danger-color);
+}
+
+.feedback-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.feedback-icon {
+    font-size: 1.5rem;
+}
+
+.feedback-icon i {
+    margin-top: 0.25rem;
+}
+
+.correct .feedback-icon i {
+    color: var(--success-color);
+}
+
+.incorrect .feedback-icon i {
+    color: var(--danger-color);
+}
+
+.feedback-text {
+    flex: 1;
+}
+
+.feedback-title {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.correct .feedback-title {
+    color: var(--success-color);
+}
+
+.incorrect .feedback-title {
+    color: var(--danger-color);
+}
+
+.feedback-explanation {
+    color: var(--secondary-color);
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .practice-header {
+        padding: 1rem;
+    }
+    
+    .practice-question {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %} 

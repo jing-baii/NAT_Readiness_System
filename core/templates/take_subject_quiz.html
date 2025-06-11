@@ -1,0 +1,578 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card quiz-card">
+                <div class="card-header quiz-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-0 quiz-title">{{ subject.name }} Quiz - Level {{ level }}</h3>
+                            <p class="text-muted mb-0">Test your knowledge</p>
+                        </div>
+                        <div class="timer-container">
+                            <div class="timer-badge">
+                                <i class="fas fa-clock me-2"></i>
+                                <span id="timer">00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if is_next_level and weak_areas %}
+                <div class="card-body bg-light">
+                    <h4 class="mb-3">Focus Areas for Level {{ level }}</h4>
+                    <p class="text-muted">These questions are focused on your weak areas from the previous level:</p>
+                    
+                    {% if weak_areas.general_topics %}
+                    <div class="mb-3">
+                        <h5>General Topics:</h5>
+                        <ul class="list-group">
+                            {% for topic in weak_areas.general_topics %}
+                            <li class="list-group-item">{{ topic.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    {% if weak_areas.subtopics %}
+                    <div class="mb-3">
+                        <h5>Subtopics:</h5>
+                        <ul class="list-group">
+                            {% for subtopic in weak_areas.subtopics %}
+                            <li class="list-group-item">{{ subtopic.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="quizForm" action="{% url 'take_subject_quiz' subject_id=subject.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                        
+                        <!-- Progress Bar -->
+                        <div class="quiz-progress mb-4">
+                            <div class="progress-info d-flex justify-content-between mb-2">
+                                <span>Progress</span>
+                                <span class="progress-percentage">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question Navigation -->
+                        <div class="question-navigation mb-4">
+                            {% for question in questions %}
+                                <button type="button" class="question-nav-btn" 
+                                        data-question="{{ forloop.counter0 }}">
+                                    <span class="question-number">{{ forloop.counter }}</span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                        
+                        {% for question in questions %}
+                            <div class="question-container {% if not forloop.first %}hidden{% endif %}" 
+                                 id="question_{{ forloop.counter0 }}">
+                                <div class="question-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h4 class="question-title">Question {{ forloop.counter }}</h4>
+                                        <button type="button" class="btn mark-for-review" 
+                                                data-question="{{ question.id }}">
+                                            <i class="fas fa-flag"></i>
+                                            <span>Mark for Review</span>
+                                        </button>
+                                    </div>
+                                    <p class="question-text">{{ question.question_text }}</p>
+                                </div>
+                                
+                                <div class="question-body">
+                                    {% if question.question_type == 'multiple_choice' %}
+                                        <div class="choices">
+                                            {% for choice in question.choices.all %}
+                                                <div class="choice-item">
+                                                    <input class="form-check-input" type="radio" 
+                                                           name="answer_{{ question.id }}" 
+                                                           id="answer_{{ question.id }}_{{ choice.id }}"
+                                                           value="{{ choice.id }}" 
+                                                           required>
+                                                    <label class="form-check-label" for="answer_{{ question.id }}_{{ choice.id }}">
+                                                        <span class="choice-letter">
+                                                            {% if forloop.counter == 1 %}A
+                                                            {% elif forloop.counter == 2 %}B
+                                                            {% elif forloop.counter == 3 %}C
+                                                            {% elif forloop.counter == 4 %}D
+                                                            {% else %}{{ forloop.counter }}
+                                                            {% endif %}
+                                                        </span>
+                                                        <span class="choice-text">{{ choice.choice_text }}</span>
+                                                    </label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    
+                                    {% elif question.question_type == 'true_false' %}
+                                        <div class="true-false-choices">
+                                            <div class="choice-item">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="answer_{{ question.id }}" 
+                                                       value="True" required>
+                                                <label class="form-check-label">
+                                                    <span class="choice-letter">A</span>
+                                                    <span class="choice-text">True</span>
+                                                </label>
+                                            </div>
+                                            <div class="choice-item">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="answer_{{ question.id }}" 
+                                                       value="False" required>
+                                                <label class="form-check-label">
+                                                    <span class="choice-letter">B</span>
+                                                    <span class="choice-text">False</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    
+                                    {% elif question.question_type == 'short_answer' %}
+                                        <div class="short-answer-input">
+                                            <input type="text" class="form-control" 
+                                                   name="answer_{{ question.id }}" 
+                                                   placeholder="Type your answer here..."
+                                                   required>
+                                        </div>
+                                    
+                                    {% elif question.question_type == 'essay' %}
+                                        <div class="essay-input">
+                                            <textarea class="form-control" name="answer_{{ question.id }}" 
+                                                      rows="4" 
+                                                      placeholder="Write your essay here..."
+                                                      required></textarea>
+                                        </div>
+                                    
+                                    {% elif question.question_type == 'file_upload' %}
+                                        <div class="file-upload-container">
+                                            <div class="upload-area">
+                                                <input type="file" class="form-control" 
+                                                       name="file_{{ question.id }}" 
+                                                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                                                       required>
+                                                <div class="upload-info">
+                                                    <i class="fas fa-cloud-upload-alt"></i>
+                                                    <p>Drag and drop your file here or click to browse</p>
+                                                    <small>Maximum file size: {{ question.max_file_size }}MB</small>
+                                                    <small>Allowed types: {{ question.allowed_file_types }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Navigation Buttons -->
+                                <div class="question-navigation-buttons">
+                                    <button type="button" class="btn btn-prev" 
+                                            {% if forloop.first %}disabled{% endif %}>
+                                        <i class="fas fa-arrow-left"></i>
+                                        <span>Previous</span>
+                                    </button>
+                                    <button type="button" class="btn btn-next" 
+                                            {% if forloop.last %}disabled{% endif %}>
+                                        <span>Next</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="quiz-actions">
+                            <button type="button" class="btn btn-save" id="saveProgress">
+                                <i class="fas fa-save"></i>
+                                <span>Save Progress</span>
+                            </button>
+                            <button type="submit" class="btn btn-submit" id="submitQuiz">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Submit Quiz</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize timer
+    let timeElapsed = 0;
+    const timerInterval = setInterval(() => {
+        timeElapsed++;
+        const minutes = Math.floor(timeElapsed / 60);
+        const seconds = timeElapsed % 60;
+        document.getElementById('timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+
+    // Question navigation
+    const questions = document.querySelectorAll('.question-container');
+    const navButtons = document.querySelectorAll('.question-nav-btn');
+    const progressBar = document.querySelector('.progress-bar');
+    let currentQuestionIndex = 0;
+    
+    function showQuestion(index) {
+        if (index < 0 || index >= questions.length) return;
+        
+        currentQuestionIndex = index;
+        questions.forEach(q => q.classList.add('hidden'));
+        questions[index].classList.remove('hidden');
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        navButtons[index].classList.add('active');
+        
+        // Update progress bar
+        const progress = ((index + 1) / questions.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        document.querySelector('.progress-percentage').textContent = `${Math.round(progress)}%`;
+        
+        // Update navigation buttons
+        const prevButtons = document.querySelectorAll('.btn-prev');
+        const nextButtons = document.querySelectorAll('.btn-next');
+        
+        prevButtons.forEach(btn => {
+            btn.disabled = index === 0;
+        });
+        nextButtons.forEach(btn => {
+            btn.disabled = index === questions.length - 1;
+        });
+    }
+    
+    // Navigation buttons
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showQuestion(currentQuestionIndex + 1);
+        });
+    });
+    
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showQuestion(currentQuestionIndex - 1);
+        });
+    });
+    
+    // Question navigation buttons
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const index = parseInt(this.dataset.question);
+            showQuestion(index);
+        });
+    });
+    
+    // Mark for review
+    document.querySelectorAll('.mark-for-review').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            this.classList.toggle('active');
+            const questionId = this.dataset.question;
+            const navBtn = document.querySelector(`.question-nav-btn[data-question="${questionId}"]`);
+            if (navBtn) navBtn.classList.toggle('review');
+        });
+    });
+    
+    // Form submission
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+        clearInterval(timerInterval);
+    });
+
+    // Initialize first question
+    showQuestion(0);
+});
+</script>
+
+<style>
+:root {
+    --primary-color: #4a6bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-bg: #f8f9fa;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.quiz-card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.quiz-header {
+    background: linear-gradient(135deg, var(--primary-color), #6a5acd);
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+}
+
+.quiz-title {
+    font-weight: 600;
+    color: white;
+}
+
+.timer-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.quiz-progress {
+    background: var(--light-bg);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+}
+
+.progress {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--primary-color), #6a5acd);
+    transition: width 0.3s ease;
+}
+
+.question-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--light-bg);
+    border-radius: var(--border-radius);
+}
+
+.question-nav-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    background: white;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.question-nav-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.question-nav-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.question-nav-btn.review .review-flag {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    color: var(--warning-color);
+    font-size: 12px;
+}
+
+.question-container {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+}
+
+.question-header {
+    margin-bottom: 2rem;
+}
+
+.question-title {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.question-text {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    margin-top: 1rem;
+}
+
+.choices, .true-false-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.choice-item {
+    background: var(--light-bg);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.choice-item:hover {
+    background: #e9ecef;
+}
+
+.choice-item input[type="radio"] {
+    margin-right: 1rem;
+}
+
+.choice-letter {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    margin-right: 1rem;
+}
+
+.choice-text {
+    font-size: 1rem;
+}
+
+.mark-for-review {
+    background: transparent;
+    color: var(--warning-color);
+    border: 1px solid var(--warning-color);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.mark-for-review:hover {
+    background: var(--warning-color);
+    color: white;
+}
+
+.mark-for-review.active {
+    background: var(--warning-color);
+    color: white;
+}
+
+.question-navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.btn-prev, .btn-next {
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-prev {
+    background: var(--light-bg);
+    color: var(--secondary-color);
+}
+
+.btn-next {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-prev:hover, .btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+.quiz-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-save, .btn-submit {
+    padding: 0.75rem 2rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-save {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-submit {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-save:hover, .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+.file-upload-container {
+    border: 2px dashed var(--primary-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    text-align: center;
+}
+
+.upload-area {
+    position: relative;
+}
+
+.upload-info {
+    color: var(--secondary-color);
+}
+
+.upload-info i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .quiz-header {
+        padding: 1rem;
+    }
+    
+    .question-container {
+        padding: 1rem;
+    }
+    
+    .question-navigation-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .quiz-actions {
+        flex-direction: column;
+    }
+}
+
+/* Add this new rule */
+.hidden {
+    display: none;
+}
+</style>
+{% endblock %} 

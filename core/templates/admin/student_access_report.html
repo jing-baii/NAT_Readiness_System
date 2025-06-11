@@ -1,0 +1,288 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .report-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .student-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .student-header {
+        background: linear-gradient(45deg, #4f46e5, #6366f1);
+        padding: 1.5rem;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .student-header h3 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .access-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .subject-section {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .subject-section:last-child {
+        border-bottom: none;
+    }
+
+    .subject-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .subject-header h4 {
+        margin: 0;
+        color: #1f2937;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .link-item {
+        padding: 1rem;
+        border-radius: 8px;
+        background: #f9fafb;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .link-item:hover {
+        background: #f3f4f6;
+        transform: translateX(4px);
+    }
+
+    .link-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .link-content {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .link-info {
+        flex: 1;
+    }
+
+    .link-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .link-description {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .link-meta {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .material-type {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        gap: 0.5rem;
+    }
+
+    .material-type.video { background-color: #e3f2fd; color: #1976d2; }
+    .material-type.text { background-color: #e8f5e9; color: #2e7d32; }
+    .material-type.interactive { background-color: #fff3e0; color: #f57c00; }
+    .material-type.quiz { background-color: #fce4ec; color: #c2185b; }
+    .material-type.practice { background-color: #f3e5f5; color: #7b1fa2; }
+
+    .access-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .subtopic-badge {
+        background: #e5e7eb;
+        color: #4b5563;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #9ca3af;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .link-content {
+            flex-direction: column;
+        }
+        
+        .link-meta {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1 class="mb-4">
+        <i class="fas fa-chart-line me-2"></i>
+        Student Study Link Access Report
+    </h1>
+
+    {% for student_info in student_data %}
+    <div class="student-card">
+        <div class="student-header">
+            <h3>
+                <i class="fas fa-user-graduate"></i>
+                {{ student_info.student.username }}
+            </h3>
+            <div class="access-count">
+                <i class="fas fa-link"></i>
+                {{ student_info.total_accesses }} Accesses
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            {% for subject, accesses in student_info.subjects.items %}
+            <div class="subject-section">
+                <div class="subject-header">
+                    <h4>
+                        <i class="fas fa-book"></i>
+                        {{ subject.name }}
+                    </h4>
+                </div>
+
+                <div class="links-list">
+                    {% for access in accesses %}
+                    <div class="link-item">
+                        <div class="link-content">
+                            <div class="link-info">
+                                <h5 class="link-title">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <a href="{{ access.study_link.url }}" target="_blank" class="text-decoration-none">
+                                        {{ access.study_link.title }}
+                                    </a>
+                                </h5>
+                                <p class="link-description">{{ access.study_link.description }}</p>
+                                <div class="link-meta">
+                                    <span class="material-type {{ access.study_link.material_type }}">
+                                        <i class="fas fa-{% if access.study_link.material_type == 'video' %}video{% elif access.study_link.material_type == 'text' %}file-alt{% elif access.study_link.material_type == 'interactive' %}mouse-pointer{% elif access.study_link.material_type == 'quiz' %}question-circle{% else %}tasks{% endif %}"></i>
+                                        {{ access.study_link.get_material_type_display }}
+                                    </span>
+                                    <span class="access-time">
+                                        <i class="fas fa-clock"></i>
+                                        {{ access.access_time|date:"F j, Y, g:i a" }}
+                                    </span>
+                                    {% if access.duration %}
+                                    <span class="access-time">
+                                        <i class="fas fa-hourglass-half"></i>
+                                        {{ access.duration }}
+                                    </span>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'delete_link_access' access.id %}" class="d-inline" style="margin-left: auto;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this access record?')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="subtopic-badge">
+                                {{ access.study_link.subtopic.name }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="fas fa-search"></i>
+        <h3>No Study Link Access Records Found</h3>
+        <p>There are no records of students accessing study materials yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

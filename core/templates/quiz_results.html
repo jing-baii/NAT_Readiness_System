@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card quiz-results-card">
+                <div class="card-header quiz-results-header">
+                    <h3 class="mb-0">Quiz Results</h3>
+                    <p class="text-muted mb-0">{{ subject.name }} Quiz</p>
+    </div>
+                <div class="card-body">
+                    <!-- Score Display -->
+                    <div class="score-display text-center mb-4">
+                        <div class="score-circle">
+                            <h2 class="score-percentage">{{ score|floatformat:1 }}%</h2>
+                            <p class="score-details">
+                                {{ correct_answers }} out of {{ total_questions }} correct
+                            </p>
+        </div>
+    </div>
+
+                    <!-- Weak Areas -->
+                    {% if weak_areas %}
+                    <div class="weak-areas mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0">Areas for Improvement</h4>
+                            <button class="btn btn-primary" id="getStudyMaterialsBtn">
+                                <i class="fas fa-book-reader me-2"></i>
+                                Get Study Materials
+                            </button>
+                        </div>
+                        <div class="weak-areas-list">
+                            {% for area in weak_areas %}
+                            <span class="badge bg-warning">{{ area.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Study Material Recommendations -->
+                    <div class="study-materials" id="studyMaterialsSection" style="display: none;">
+                        <h4>Recommended Study Materials</h4>
+                        <p class="text-muted">Select the type of study material you prefer:</p>
+                        
+                        <div class="material-type-buttons mb-4">
+                            <button class="btn btn-outline-primary material-type-btn" data-type="video">
+                                <i class="fas fa-video"></i>
+                                Video Tutorials
+                            </button>
+                            <button class="btn btn-outline-primary material-type-btn" data-type="practice">
+                                <i class="fas fa-pencil-alt"></i>
+                                Practice Problems
+                            </button>
+                            <button class="btn btn-outline-primary material-type-btn" data-type="interactive">
+                                <i class="fas fa-mouse-pointer"></i>
+                                Interactive Exercises
+                            </button>
+                            <button class="btn btn-outline-primary material-type-btn" data-type="text">
+                                <i class="fas fa-book"></i>
+                                Reading Materials
+                            </button>
+                        </div>
+
+                        <div id="materialsContainer" style="display: none;">
+                            <div class="material-list-header d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0" id="selectedMaterialType"></h5>
+                                <button class="btn btn-outline-secondary btn-sm" id="changeMaterialType">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    Change Type
+                            </button>
+                            </div>
+                            <div class="list-group" id="materialsList">
+                                <!-- Materials will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="quiz-actions mt-4">
+                        <a href="{% url 'select_quiz' %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Quiz Selection
+                        </a>
+                        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home"></i>
+                            Return to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const materialTypeButtons = document.querySelectorAll('.material-type-btn');
+    const getStudyMaterialsBtn = document.getElementById('getStudyMaterialsBtn');
+    const studyMaterialsSection = document.getElementById('studyMaterialsSection');
+    const materialsContainer = document.getElementById('materialsContainer');
+    const materialsList = document.getElementById('materialsList');
+    const selectedMaterialType = document.getElementById('selectedMaterialType');
+    const changeMaterialTypeBtn = document.getElementById('changeMaterialType');
+    
+    // Handle study materials button click
+    if (getStudyMaterialsBtn) {
+        getStudyMaterialsBtn.addEventListener('click', function() {
+            studyMaterialsSection.style.display = 'block';
+            materialsContainer.style.display = 'none';
+            studyMaterialsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+    
+    // Handle material type selection
+    materialTypeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const typeName = this.textContent.trim();
+            
+            // Update UI
+            selectedMaterialType.textContent = typeName;
+            materialsContainer.style.display = 'block';
+            
+            // Hide type selection buttons
+            document.querySelector('.material-type-buttons').style.display = 'none';
+            
+            // Load materials for selected type
+            loadMaterials(type);
+        });
+    });
+    
+    // Handle change material type button
+    if (changeMaterialTypeBtn) {
+        changeMaterialTypeBtn.addEventListener('click', function() {
+            materialsContainer.style.display = 'none';
+            document.querySelector('.material-type-buttons').style.display = 'flex';
+        });
+    }
+    
+    function generateMaterials(type, weakAreas) {
+        const materials = [];
+        const sources = {
+            video: [
+                {
+                    name: 'YouTube',
+                    icon: 'fa-youtube',
+                    baseUrl: 'https://www.youtube.com/embed/',
+                    description: 'Watch video tutorials on YouTube',
+                    searchUrl: 'https://www.youtube.com/results?search_query=',
+                    videoIds: {
+                        'Filipino': 'dQw4w9WgXcQ', // Filipino Language Basics
+                        'Mathematics': 'NybHckSEQBI', // Algebra Basics
+                        'Science': 'dQw4w9WgXcQ', // Science Basics
+                        'English': 'dQw4w9WgXcQ', // English Language Basics
+                        'History': 'dQw4w9WgXcQ' // History Basics
+                    }
+                },
+                {
+                    name: 'Khan Academy',
+                    icon: 'fa-video',
+                    baseUrl: 'https://www.khanacademy.org/embed/',
+                    description: 'Watch educational videos on Khan Academy',
+                    searchUrl: 'https://www.khanacademy.org/search?page_search_query=',
+                    videoIds: {
+                        'Filipino': 'humanities/grammar',
+                        'Mathematics': 'math/algebra-basics',
+                        'Science': 'science/biology',
+                        'English': 'humanities/grammar',
+                        'History': 'humanities/world-history'
+                    }
+                }
+            ],
+            practice: [
+                {
+                    name: 'Brilliant.org',
+                    icon: 'fa-pencil-alt',
+                    baseUrl: 'https://brilliant.org/search/?q='
+                },
+                {
+                    name: 'Wolfram Alpha',
+                    icon: 'fa-calculator',
+                    baseUrl: 'https://www.wolframalpha.com/input/?i='
+                },
+                {
+                    name: 'Mathway',
+                    icon: 'fa-calculator',
+                    baseUrl: 'https://www.mathway.com/Algebra?q='
+                }
+            ],
+            interactive: [
+                {
+                    name: 'PhET Interactive Simulations',
+                    icon: 'fa-mouse-pointer',
+                    baseUrl: 'https://phet.colorado.edu/en/search?q='
+                },
+                {
+                    name: 'GeoGebra',
+                    icon: 'fa-chart-line',
+                    baseUrl: 'https://www.geogebra.org/search?q='
+                },
+                {
+                    name: 'Desmos',
+                    icon: 'fa-chart-line',
+                    baseUrl: 'https://www.desmos.com/search?q='
+                }
+            ],
+            text: [
+                {
+                    name: 'OpenStax',
+                    icon: 'fa-book',
+                    baseUrl: 'https://openstax.org/search?q='
+                },
+                {
+                    name: 'MIT OpenCourseWare',
+                    icon: 'fa-book',
+                    baseUrl: 'https://ocw.mit.edu/search/?q='
+                },
+                {
+                    name: 'Project Gutenberg',
+                    icon: 'fa-book',
+                    baseUrl: 'https://www.gutenberg.org/ebooks/search/?query='
+                }
+            ]
+        };
+        
+        // Map weak areas to their corresponding subjects
+        const subjectMapping = {
+            'Filipino': 'Filipino',
+            'Math': 'Mathematics',
+            'Science': 'Science',
+            'English': 'English',
+            'History': 'History'
+        };
+        
+        weakAreas.forEach(area => {
+            const subject = subjectMapping[area] || area;
+            const typeSources = sources[type];
+            
+            typeSources.forEach(source => {
+                let url, description, embedUrl;
+                
+                switch(type) {
+                    case 'video':
+                        if (source.name === 'YouTube') {
+                            const videoId = source.videoIds[subject] || 'dQw4w9WgXcQ';
+                            url = `${source.searchUrl}${encodeURIComponent(subject + ' tutorial educational')}`;
+                            embedUrl = `${source.baseUrl}${videoId}?autoplay=1&rel=0`;
+                            description = `${source.description} about ${subject}`;
+                        } else {
+                            const videoPath = source.videoIds[subject] || 'humanities/grammar';
+                            url = `${source.searchUrl}${encodeURIComponent(subject + ' tutorial')}`;
+                            embedUrl = `${source.baseUrl}${videoPath}?autoplay=1`;
+                            description = `${source.description} about ${subject}`;
+                        }
+                        break;
+                        
+                    case 'practice':
+                        url = `${source.baseUrl}${encodeURIComponent(subject + ' practice problems')}`;
+                        description = `Solve practice problems and exercises for ${subject} on ${source.name}`;
+                        break;
+                        
+                    case 'interactive':
+                        url = `${source.baseUrl}${encodeURIComponent(subject)}`;
+                        description = `Explore interactive content for ${subject} on ${source.name}`;
+                        break;
+                        
+                    case 'text':
+                        url = `${source.baseUrl}${encodeURIComponent(subject)}`;
+                        description = `Read educational materials about ${subject} on ${source.name}`;
+                        break;
+                }
+                
+                materials.push({
+                    title: `${subject} - ${source.name}`,
+                    url: url,
+                    source: source.name,
+                    description: description,
+                    topic: subject,
+                    icon: source.icon,
+                    embedUrl: embedUrl
+                });
+            });
+        });
+        
+        return materials;
+    }
+
+    function loadMaterials(type) {
+        materialsList.innerHTML = '';
+        
+        const weakAreas = Array.from(document.querySelectorAll('.weak-areas-list .badge')).map(badge => badge.textContent.trim());
+        const materials = generateMaterials(type, weakAreas);
+        
+        if (materials.length === 0) {
+            materialsList.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No materials available for this type. Please try another type.
+                </div>
+            `;
+            return;
+        }
+        
+        if (type === 'video') {
+            // For videos, show the first video directly with autoplay
+            const firstVideo = materials[0];
+            materialsList.innerHTML = `
+                <div class="video-container mb-4">
+                    <div class="ratio ratio-16x9">
+                        <iframe src="${firstVideo.embedUrl}" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                    <div class="video-info mt-3">
+                        <h5 class="mb-2">
+                            <i class="fas ${firstVideo.icon} me-2"></i>
+                            ${firstVideo.title}
+                        </h5>
+                        <p class="mb-2">${firstVideo.description}</p>
+                        <a href="${firstVideo.url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i> View on ${firstVideo.source}
+                        </a>
+                    </div>
+                </div>
+                <div class="other-videos">
+                    <h5 class="mb-3">More Videos</h5>
+                    <div class="list-group">
+                        ${materials.slice(1).map(material => `
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        <i class="fas ${material.icon} me-2"></i>
+                                        ${material.title}
+                                    </h6>
+                                    <span class="badge" data-source="${material.source}">${material.source}</span>
+                                </div>
+                                <p class="mb-1">${material.description}</p>
+                                <div class="mt-2">
+                                    <a href="${material.url}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                                        <i class="fas fa-external-link-alt"></i> View on ${material.source}
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-success play-video" 
+                                            data-embed-url="${material.embedUrl}">
+                                        <i class="fas fa-play"></i> Play This Video
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Add event listeners for play video buttons
+            document.querySelectorAll('.play-video').forEach(button => {
+                button.addEventListener('click', function() {
+                    const embedUrl = this.dataset.embedUrl;
+                    const videoContainer = document.querySelector('.video-container .ratio');
+                    videoContainer.innerHTML = `
+                        <iframe src="${embedUrl}" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    `;
+                    // Update video info
+                    const videoInfo = document.querySelector('.video-info');
+                    const listItem = this.closest('.list-group-item');
+                    videoInfo.innerHTML = `
+                        <h5 class="mb-2">
+                            <i class="fas ${listItem.querySelector('i').className} me-2"></i>
+                            ${listItem.querySelector('h6').textContent}
+                        </h5>
+                        <p class="mb-2">${listItem.querySelector('p').textContent}</p>
+                        <a href="${listItem.querySelector('a').href}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i> View on ${listItem.querySelector('.badge').textContent}
+                        </a>
+                    `;
+                });
+            });
+        } else {
+            // For non-video materials, show as before
+            materials.forEach(material => {
+                const materialItem = document.createElement('div');
+                materialItem.className = 'list-group-item list-group-item-action';
+                materialItem.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">
+                            <i class="fas ${material.icon} me-2"></i>
+                            ${material.title}
+                        </h5>
+                        <span class="badge" data-source="${material.source}">${material.source}</span>
+                    </div>
+                    <p class="mb-1">${material.description}</p>
+                    <small class="text-muted">Topic: ${material.topic}</small>
+                    <div class="mt-2">
+                        <a href="${material.url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i> View on ${material.source}
+                        </a>
+                    </div>
+                `;
+                materialsList.appendChild(materialItem);
+            });
+        }
+    }
+});
+</script>
+
+<style>
+.quiz-results-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.quiz-results-header {
+    background: linear-gradient(135deg, #4a6bff, #6a5acd);
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+}
+
+.score-display {
+    margin: 2rem 0;
+}
+
+.score-circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4a6bff, #6a5acd);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.score-percentage {
+    font-size: 3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.score-details {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.weak-areas {
+    background: #fff3cd;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.weak-areas:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.weak-areas h4 {
+    color: #856404;
+    margin-bottom: 1rem;
+}
+
+.weak-areas-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.material-type-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+}
+
+.material-type-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    justify-content: center;
+}
+
+.material-type-btn i {
+    font-size: 1.2rem;
+}
+
+.material-list-header {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+#changeMaterialType {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.material-list {
+    margin-top: 1rem;
+}
+
+.list-group-item {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.list-group-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-color: #4a6bff;
+}
+
+.list-group-item h5 {
+    color: #4a6bff;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 15px;
+}
+
+.quiz-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+#getStudyMaterialsBtn {
+    background: linear-gradient(135deg, #4a6bff, #6a5acd);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+#getStudyMaterialsBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#studyMaterialsSection {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#materialsContainer {
+    animation: fadeIn 0.5s ease;
+}
+
+@media (max-width: 768px) {
+    .score-circle {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .score-percentage {
+        font-size: 2.5rem;
+    }
+    
+    .material-type-buttons {
+        flex-direction: column;
+    }
+    
+    .material-type-btn {
+        width: 100%;
+    }
+    
+    .quiz-actions {
+        flex-direction: column;
+    }
+}
+
+/* Add YouTube-specific styling */
+.list-group-item .fa-youtube {
+    color: #FF0000;
+}
+
+/* Update badge colors for different sources */
+.badge[data-source="YouTube"] {
+    background-color: #FF0000;
+}
+
+.badge[data-source="Khan Academy"] {
+    background-color: #14BF96;
+}
+
+.badge[data-source="Coursera"] {
+    background-color: #0056D2;
+}
+
+.badge[data-source="edX"] {
+    background-color: #022B3A;
+}
+
+/* Video Container Styles */
+.video-container {
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2rem;
+}
+
+.video-info {
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ratio {
+    background: #000;
+}
+
+iframe {
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+.other-videos {
+    margin-top: 2rem;
+}
+
+.other-videos h5 {
+    color: #4a6bff;
+    font-weight: 600;
+}
+
+.play-video {
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #4a6bff, #6a5acd);
+    color: white;
+    border: none;
+}
+
+.play-video:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #6a5acd, #4a6bff);
+}
+
+/* Remove modal styles */
+.modal-content,
+.modal-header,
+.modal-body,
+.modal-title,
+.video-loading {
+    display: none;
+}
+</style>
+{% endblock %} 

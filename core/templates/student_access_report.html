@@ -1,0 +1,1090 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid h-100 py-4">
+    <div class="report-container h-100">
+        <!-- Loading Skeleton -->
+        <div id="loading-skeleton">
+            <!-- Header Skeleton -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="skeleton-text" style="width: 300px; height: 40px;"></div>
+                <div class="skeleton-button" style="width: 150px; height: 38px;"></div>
+            </div>
+
+            <!-- Summary Stats Skeleton -->
+            <div class="summary-stats">
+                <div class="row g-4">
+                    {% for i in '123'|make_list %}
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="skeleton-text" style="width: 60px; height: 60px; border-radius: 12px;"></div>
+                            <div class="stat-info">
+                                <div class="skeleton-text" style="width: 80px; height: 32px;"></div>
+                                <div class="skeleton-text" style="width: 120px; height: 20px; margin-top: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Filter Form Skeleton -->
+            <div class="filter-section mb-4">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="skeleton-text" style="width: 100%; height: 38px; border-radius: 6px;"></div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="skeleton-text" style="width: 100%; height: 38px; border-radius: 6px;"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="skeleton-button" style="width: 100%; height: 38px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students List Skeleton -->
+            <div class="students-container">
+                {% for i in '12'|make_list %}
+                <div class="student-card">
+                    <div class="student-header">
+                        <div class="student-info">
+                            <div class="skeleton-text" style="width: 200px; height: 32px;"></div>
+                            <div class="student-stats">
+                                {% for j in '123'|make_list %}
+                                <div class="skeleton-text" style="width: 150px; height: 32px; border-radius: 20px;"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        {% for j in '12'|make_list %}
+                        <div class="subject-section">
+                            <div class="subject-header">
+                                <div class="skeleton-text" style="width: 180px; height: 28px;"></div>
+                                <div class="subject-stats">
+                                    {% for k in '123'|make_list %}
+                                    <div class="skeleton-text" style="width: 120px; height: 28px; border-radius: 20px;"></div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="links-list">
+                                {% for k in '23'|make_list %}
+                                <div class="link-item">
+                                    <div class="link-content">
+                                        <div class="link-info">
+                                            <div class="skeleton-text" style="width: 250px; height: 24px;"></div>
+                                            <div class="skeleton-text" style="width: 100%; height: 20px; margin-top: 8px;"></div>
+                                            <div class="link-meta">
+                                                {% for l in '123'|make_list %}
+                                                <div class="skeleton-text" style="width: 100px; height: 24px; border-radius: 20px;"></div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="skeleton-text" style="width: 80px; height: 24px; border-radius: 20px;"></div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Actual Content -->
+        <div id="content" class="d-none">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">
+                <i class="fas fa-chart-line me-2"></i>
+                Student Study Link Access Report
+            </h1>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+
+        <style>
+            .report-container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                padding: 2rem;
+                margin-bottom: 2rem;
+                height: calc(100vh - 2rem);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .summary-stats {
+                margin-bottom: 2rem;
+                flex-shrink: 0;
+            }
+
+            .students-container {
+                flex: 1;
+                overflow-y: auto;
+                padding-right: 1rem;
+            }
+
+            .students-container::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .students-container::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+
+            .students-container::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+
+            .students-container::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+
+            .student-card {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                margin-bottom: 2rem;
+                overflow: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .student-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .student-header {
+                background: linear-gradient(45deg, #4f46e5, #6366f1);
+                padding: 1.5rem;
+                color: white;
+            }
+
+            .student-info {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .student-info h3 {
+                margin: 0;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .student-stats {
+                display: flex;
+                gap: 1.5rem;
+                flex-wrap: wrap;
+            }
+
+            .stat-item {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .subject-section {
+                padding: 1.5rem;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .subject-section:last-child {
+                border-bottom: none;
+            }
+
+            .subject-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                padding-bottom: 0.75rem;
+                border-bottom: 2px solid #e5e7eb;
+            }
+
+            .subject-header h4 {
+                margin: 0;
+                color: #1f2937;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .subject-stats {
+                display: flex;
+                gap: 1rem;
+            }
+
+            .links-list {
+                max-height: 400px;
+                overflow-y: auto;
+                padding-right: 1rem;
+            }
+
+            .links-list::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .links-list::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 3px;
+            }
+
+            .links-list::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 3px;
+            }
+
+            .links-list::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+
+            .link-item {
+                padding: 1rem;
+                border-radius: 8px;
+                background: #f9fafb;
+                margin-bottom: 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .link-item:hover {
+                background: #f3f4f6;
+                transform: translateX(4px);
+            }
+
+            .link-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .link-content {
+                display: flex;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .link-info {
+                flex: 1;
+            }
+
+            .link-title {
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 0.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .link-description {
+                color: #6b7280;
+                font-size: 0.875rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .link-meta {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .action-buttons {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .action-buttons .btn {
+                padding: 0.25rem 0.5rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .action-buttons .btn:hover {
+                transform: translateY(-1px);
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 3rem;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+
+            .empty-state i {
+                font-size: 3rem;
+                color: #9ca3af;
+                margin-bottom: 1rem;
+            }
+
+            .empty-state h3 {
+                color: #1f2937;
+                margin-bottom: 0.5rem;
+            }
+
+            .empty-state p {
+                color: #6b7280;
+                margin: 0;
+            }
+
+            .filter-section {
+                background: white;
+                border-radius: 12px;
+                padding: 1.5rem;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                margin-bottom: 2rem;
+            }
+
+            .filter-form .input-group {
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            .filter-form .input-group-text {
+                background: #f9fafb;
+                border-right: none;
+            }
+
+            .filter-form .form-control,
+            .filter-form .form-select {
+                border-left: none;
+            }
+
+            .filter-form .form-control:focus,
+            .filter-form .form-select:focus {
+                box-shadow: none;
+                border-color: #ced4da;
+            }
+
+            .filter-form .btn-primary {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+            }
+
+            .filter-form .btn-primary:hover {
+                transform: translateY(-1px);
+            }
+
+            .filter-form .form-control::-webkit-calendar-picker-indicator {
+                display: none !important;
+            }
+
+            .filter-form .form-control::-webkit-list-button {
+                display: none !important;
+            }
+
+            .filter-form .form-control::-webkit-search-cancel-button {
+                display: none !important;
+            }
+
+            .filter-form .form-control::-webkit-search-decoration {
+                display: none !important;
+            }
+
+            .filter-form .form-control::-webkit-search-results-button {
+                display: none !important;
+            }
+
+            .filter-form .form-control::-webkit-search-results-decoration {
+                display: none !important;
+            }
+
+            .filter-form .form-control::-webkit-autofill {
+                -webkit-box-shadow: 0 0 0 30px white inset !important;
+            }
+
+            .filter-form .form-control:focus {
+                border-color: #ced4da;
+                box-shadow: none;
+            }
+
+            .filter-form .form-control::placeholder {
+                color: #9ca3af;
+            }
+
+            .filter-form .form-control:focus::placeholder {
+                color: #6b7280;
+            }
+
+            @media (max-width: 768px) {
+                .report-container {
+                    padding: 1rem;
+                        height: auto;
+                        min-height: calc(100vh - 1rem);
+                    }
+
+                    .summary-stats {
+                        margin-bottom: 1rem;
+                    }
+
+                    .stat-card {
+                        flex-direction: column;
+                        text-align: center;
+                        padding: 1rem;
+                    }
+
+                    .stat-card i {
+                        margin-bottom: 0.5rem;
+                        font-size: 1.5rem;
+                        padding: 0.75rem;
+                    }
+
+                    .stat-info h3 {
+                        font-size: 1.25rem;
+                    }
+
+                    .filter-section {
+                        padding: 1rem;
+                        margin-bottom: 1rem;
+                    }
+
+                    .filter-form .row {
+                        gap: 0.75rem !important;
+                    }
+
+                    .filter-form .col-md-2,
+                    .filter-form .col-md-5 {
+                        width: 100%;
+                    }
+
+                    .student-card {
+                        margin-bottom: 1rem;
+                    }
+
+                    .student-header {
+                        padding: 1rem;
+                    }
+
+                    .student-info h3 {
+                        font-size: 1.25rem;
+                }
+
+                .student-stats {
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+
+                    .stat-item {
+                        width: 100%;
+                        justify-content: center;
+                    }
+
+                    .subject-section {
+                        padding: 1rem;
+                    }
+
+                    .subject-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 0.75rem;
+                    }
+
+                    .subject-header h4 {
+                        font-size: 1.1rem;
+                    }
+
+                    .subject-stats {
+                        width: 100%;
+                        flex-direction: column;
+                        gap: 0.5rem;
+                    }
+
+                    .links-list {
+                        max-height: none;
+                        padding-right: 0;
+                    }
+
+                    .link-item {
+                        padding: 0.75rem;
+                }
+
+                .link-content {
+                    flex-direction: column;
+                        gap: 0.75rem;
+                }
+
+                .link-meta {
+                    flex-direction: column;
+                    align-items: flex-start;
+                        gap: 0.5rem;
+                    }
+
+                    .action-buttons {
+                        width: 100%;
+                        justify-content: flex-start;
+                        margin-top: 0.5rem;
+                    }
+
+                    .action-buttons .btn {
+                        padding: 0.375rem 0.75rem;
+                    }
+
+                    .subtopic-badge {
+                        align-self: flex-start;
+                        margin-top: 0.5rem;
+                    }
+
+                    .empty-state {
+                        padding: 2rem 1rem;
+                    }
+
+                    .empty-state i {
+                        font-size: 2.5rem;
+                    }
+
+                    .empty-state h3 {
+                        font-size: 1.25rem;
+                    }
+                }
+
+                @media (max-width: 576px) {
+                    .report-container {
+                        padding: 0.75rem;
+                    }
+
+                    .stat-card {
+                        padding: 0.75rem;
+                    }
+
+                    .stat-card i {
+                        font-size: 1.25rem;
+                        padding: 0.5rem;
+                    }
+
+                    .stat-info h3 {
+                        font-size: 1.1rem;
+                    }
+
+                    .student-header {
+                        padding: 0.75rem;
+                    }
+
+                    .student-info h3 {
+                        font-size: 1.1rem;
+                    }
+
+                    .subject-section {
+                        padding: 0.75rem;
+                    }
+
+                    .link-item {
+                        padding: 0.5rem;
+                    }
+                }
+
+                @media (max-height: 600px) and (orientation: landscape) {
+                    .report-container {
+                        height: auto;
+                        min-height: 100vh;
+                }
+
+                .links-list {
+                        max-height: 200px;
+                }
+
+                    .student-stats {
+                        flex-direction: row;
+                        flex-wrap: wrap;
+                    }
+
+                    .stat-item {
+                        width: auto;
+                    }
+                }
+
+                @media (min-width: 769px) and (max-width: 1024px) {
+                    .report-container {
+                        padding: 1.5rem;
+                    }
+
+                    .stat-card {
+                        padding: 1.25rem;
+                    }
+
+                    .student-stats {
+                        flex-wrap: wrap;
+                    }
+
+                    .stat-item {
+                        width: calc(50% - 0.75rem);
+                    }
+
+                    .subject-stats {
+                        flex-wrap: wrap;
+                    }
+
+                    .subject-stats .stat-item {
+                        width: calc(50% - 0.5rem);
+                    }
+                }
+
+                .report-container {
+                    overflow-x: hidden;
+                }
+                
+                .students-container {
+                    overflow-x: hidden;
+                }
+
+                .btn, 
+                .stat-item,
+                .link-item,
+                .action-buttons .btn {
+                    min-height: 44px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .form-control,
+                .form-select,
+                .input-group-text {
+                    min-height: 44px;
+                }
+
+                .link-title,
+                .link-description,
+                .stat-item {
+                    word-break: break-word;
+                }
+
+                .students-container {
+                    -webkit-overflow-scrolling: touch;
+                    scroll-behavior: smooth;
+            }
+
+            /* Suggestions Dropdown Styles */
+            .suggestions-dropdown {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 0 0 8px 8px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                max-height: 200px;
+                overflow-y: auto;
+                z-index: 1000;
+                display: none;
+            }
+
+            .suggestion-item {
+                padding: 0.75rem 1rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .suggestion-item:hover {
+                background-color: #f3f4f6;
+            }
+
+            .suggestion-item i {
+                color: #6b7280;
+                font-size: 0.875rem;
+            }
+
+            .suggestion-item.active {
+                background-color: #eef2ff;
+                color: #4f46e5;
+            }
+
+            .suggestion-item.active i {
+                color: #4f46e5;
+            }
+
+            /* Ensure the input group has proper positioning */
+            .input-group {
+                position: relative;
+            }
+
+            /* Mobile optimizations for suggestions */
+            @media (max-width: 768px) {
+                .suggestions-dropdown {
+                    max-height: 150px;
+                }
+
+                .suggestion-item {
+                    padding: 0.5rem 0.75rem;
+                }
+            }
+        </style>
+
+        <!-- Summary Statistics -->
+        <div class="summary-stats">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div class="stat-info">
+                            <h3>{{ total_students }}</h3>
+                            <p>Total Students</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="fas fa-link"></i>
+                        <div class="stat-info">
+                            <h3>{{ total_accesses }}</h3>
+                            <p>Total Accesses</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="fas fa-clock"></i>
+                        <div class="stat-info">
+                            <h3>{{ total_time }}</h3>
+                            <p>Total Minutes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="filter-section">
+            <form method="get" class="filter-form" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" 
+                                   name="student_name" 
+                                   id="studentNameInput"
+                                   class="form-control" 
+                                   placeholder="Search by student name" 
+                                   value="{{ request.GET.student_name|default:'' }}"
+                                   autocomplete="off">
+                            <div id="studentSuggestions" class="suggestions-dropdown"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-book"></i>
+                            </span>
+                            <select name="subject" class="form-select">
+                                <option value="">All Subjects</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if request.GET.subject == subject.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ subject.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Students List -->
+        <div class="students-container">
+                {% for student_info in student_data|slice:":1" %}
+            <div class="student-card">
+                <div class="student-header">
+                    <div class="student-info">
+                        <h3>
+                            <i class="fas fa-user-graduate"></i>
+                            {{ student_info.student.username }}
+                        </h3>
+                        <div class="student-stats">
+                            <span class="stat-item">
+                                <i class="fas fa-link"></i>
+                                {{ student_info.total_accesses }} Accesses
+                            </span>
+                            <span class="stat-item">
+                                <i class="fas fa-clock"></i>
+                                {{ student_info.total_time|default:"0" }} minutes
+                            </span>
+                            <span class="stat-item">
+                                <i class="fas fa-calendar"></i>
+                                Last accessed: {{ student_info.last_access|date:"M d, Y" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    {% for subject, subject_data in student_info.subjects.items %}
+                    <div class="subject-section">
+                        <div class="subject-header">
+                            <h4>
+                                <i class="fas fa-book"></i>
+                                {{ subject.name }}
+                            </h4>
+                            <div class="subject-stats">
+                                <span class="stat-item">
+                                    <i class="fas fa-link"></i>
+                                    {{ subject_data.total_accesses }} Accesses
+                                </span>
+                                <span class="stat-item">
+                                    <i class="fas fa-clock"></i>
+                                    {{ subject_data.total_time }} minutes
+                                </span>
+                                <span class="stat-item">
+                                    <i class="fas fa-calendar"></i>
+                                    Last: {{ subject_data.last_access|date:"M d, Y" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="links-list">
+                            {% for access in subject_data.accesses %}
+                            <div class="link-item">
+                                <div class="link-content">
+                                    <div class="link-info">
+                                        <h5 class="link-title">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            <a href="{{ access.study_link.url }}" target="_blank" class="text-decoration-none">
+                                                {{ access.study_link.title }}
+                                            </a>
+                                        </h5>
+                                        <p class="link-description">{{ access.study_link.description }}</p>
+                                        <div class="link-meta">
+                                            <span class="material-type {{ access.study_link.material_type }}">
+                                                <i class="fas fa-{% if access.study_link.material_type == 'video' %}video{% elif access.study_link.material_type == 'text' %}file-alt{% elif access.study_link.material_type == 'interactive' %}mouse-pointer{% elif access.study_link.material_type == 'quiz' %}question-circle{% else %}tasks{% endif %}"></i>
+                                                {{ access.study_link.get_material_type_display }}
+                                            </span>
+                                            <span class="access-time">
+                                                <i class="fas fa-clock"></i>
+                                                {{ access.access_time|date:"F j, Y, g:i a" }}
+                                            </span>
+                                            {% if access.duration %}
+                                            <span class="access-time">
+                                                <i class="fas fa-hourglass-half"></i>
+                                                {{ access.duration }} minutes
+                                            </span>
+                                            {% endif %}
+                                            <div class="action-buttons ms-auto">
+                                                <a href="{{ access.study_link.url }}" target="_blank" class="btn btn-sm btn-primary" title="View Resource">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                                <form method="post" action="{% url 'delete_link_access' access.id %}" class="d-inline ms-2">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this access record?')" title="Delete Record">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="subtopic-badge">
+                                        {{ access.study_link.subtopic.name }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>No Study Link Access Records Found</h3>
+                <p>There are no records of students accessing study materials yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+// Show content immediately
+document.getElementById('content').classList.remove('d-none');
+document.getElementById('loading-skeleton').classList.add('d-none');
+
+// Function to fetch data asynchronously
+async function fetchData(url) {
+    try {
+        // Show loading skeleton while fetching
+        document.getElementById('loading-skeleton').classList.remove('d-none');
+        document.getElementById('content').classList.add('d-none');
+
+        // Fetch data from the server
+        const response = await fetch(url);
+        const data = await response.text();
+
+        // Create a temporary div to parse the response
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data;
+
+        // Extract the content
+        const newContent = tempDiv.querySelector('#content').innerHTML;
+
+        // Update the content
+        document.getElementById('content').innerHTML = newContent;
+
+        // Update URL without page reload
+        window.history.pushState({}, '', url);
+
+        // Hide loading skeleton and show content with fade effect
+        document.getElementById('loading-skeleton').classList.add('d-none');
+        document.getElementById('content').classList.remove('d-none');
+        document.getElementById('content').classList.add('fade-in');
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        // Keep showing the content even if there's an error
+        document.getElementById('loading-skeleton').classList.add('d-none');
+        document.getElementById('content').classList.remove('d-none');
+    }
+}
+
+// Handle form submission
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const params = new URLSearchParams(formData);
+    const url = `${window.location.pathname}?${params.toString()}`;
+    fetchData(url);
+});
+
+// Start fetching data after the page is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Only fetch if there are no filter parameters
+    if (!window.location.search) {
+        fetchData(window.location.href);
+        }
+});
+
+// Student name suggestions functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const studentNameInput = document.getElementById('studentNameInput');
+    const suggestionsDropdown = document.getElementById('studentSuggestions');
+    let currentFocus = -1;
+    let studentList = [];
+
+    // Fetch student list when the page loads
+    fetch('/api/students/')
+        .then(response => response.json())
+        .then(data => {
+            studentList = data;
+        })
+        .catch(error => console.error('Error fetching student list:', error));
+
+    // Handle input changes
+    studentNameInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        suggestionsDropdown.innerHTML = '';
+        suggestionsDropdown.style.display = 'none';
+        currentFocus = -1;
+
+        if (value.length < 2) return;
+
+        const matches = studentList.filter(student => 
+            student.username.toLowerCase().includes(value)
+        ).slice(0, 5); // Limit to 5 suggestions
+
+        if (matches.length > 0) {
+            matches.forEach((student, index) => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `
+                    <i class="fas fa-user-graduate"></i>
+                    <span>${student.username}</span>
+                `;
+                
+                div.addEventListener('click', function() {
+                    studentNameInput.value = student.username;
+                    suggestionsDropdown.style.display = 'none';
+                    // Trigger form submission
+                    document.getElementById('filterForm').dispatchEvent(new Event('submit'));
+                });
+
+                div.addEventListener('mouseover', function() {
+                    removeActive();
+                    currentFocus = index;
+                    addActive();
+                });
+
+                suggestionsDropdown.appendChild(div);
+            });
+
+            suggestionsDropdown.style.display = 'block';
+        }
+    });
+
+    // Handle keyboard navigation
+    studentNameInput.addEventListener('keydown', function(e) {
+        const items = suggestionsDropdown.getElementsByClassName('suggestion-item');
+        
+        if (e.key === 'ArrowDown') {
+            currentFocus++;
+            addActive();
+            e.preventDefault();
+        } else if (e.key === 'ArrowUp') {
+            currentFocus--;
+            addActive();
+            e.preventDefault();
+        } else if (e.key === 'Enter' && currentFocus > -1) {
+            e.preventDefault();
+            items[currentFocus].click();
+        } else if (e.key === 'Escape') {
+            suggestionsDropdown.style.display = 'none';
+        }
+    });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!studentNameInput.contains(e.target) && !suggestionsDropdown.contains(e.target)) {
+            suggestionsDropdown.style.display = 'none';
+        }
+    });
+
+    function addActive() {
+        const items = suggestionsDropdown.getElementsByClassName('suggestion-item');
+        if (!items.length) return;
+
+        removeActive();
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+
+        items[currentFocus].classList.add('active');
+    }
+
+    function removeActive() {
+        const items = suggestionsDropdown.getElementsByClassName('suggestion-item');
+        for (let i = 0; i < items.length; i++) {
+            items[i].classList.remove('active');
+        }
+    }
+});
+</script>
+{% endblock %} 

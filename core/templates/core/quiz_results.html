@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Quiz Results - {{ subject.name }}</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4>Level {{ quiz_level.level }}</h4>
+                            <p>Total Attempts: {{ quiz_level.total_attempts }}</p>
+                            <p>Highest Score: {{ quiz_level.highest_score|floatformat:1 }}%</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Current Attempt</h4>
+                            <p>Score: {{ score|floatformat:1 }}%</p>
+                            <p>Correct Answers: {{ correct_answers }}/{{ total_questions }}</p>
+                        </div>
+                    </div>
+
+                    {% if score >= 70 %}
+                        <div class="alert alert-success">
+                            <h4>Congratulations! 🎉</h4>
+                            <p>You have passed Level {{ quiz_level.level }}!</p>
+                            {% if quiz_level.is_completed %}
+                                <p>You have completed all levels for this subject!</p>
+                            {% else %}
+                                <p>You can now proceed to Level {{ quiz_level.level|add:1 }}.</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <h4>Keep Practicing! 💪</h4>
+                            <p>You need to score at least 70% to pass this level.</p>
+                            <p>Your next attempt will focus on your weak areas.</p>
+                        </div>
+                    {% endif %}
+
+                    {% if weak_areas.general_topics or weak_areas.subtopics %}
+                        <div class="mt-4">
+                            <h4>Areas to Improve</h4>
+                            {% if weak_areas.general_topics %}
+                                <h5>General Topics:</h5>
+                                <ul>
+                                    {% for topic in weak_areas.general_topics %}
+                                        <li>{{ topic.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            
+                            {% if weak_areas.subtopics %}
+                                <h5>Subtopics:</h5>
+                                <ul>
+                                    {% for subtopic in weak_areas.subtopics %}
+                                        <li>{{ subtopic.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        {% if not quiz_level.is_completed %}
+                            <a href="{% url 'take_subject_quiz' subject.id %}" class="btn btn-primary">
+                                {% if score >= 70 %}
+                                    Proceed to Next Level
+                                {% else %}
+                                    Retake Quiz
+                                {% endif %}
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'subject_detail' subject.id %}" class="btn btn-secondary">Back to Subject</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
